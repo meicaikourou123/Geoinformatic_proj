@@ -16,7 +16,7 @@ export function initMap(targetId = 'map') {
         ],
         view: new View({
             center: fromLonLat([8.9, 45.583333]),
-            zoom: 10
+            zoom: 9
         }),
         controls: [new Zoom()]
     })
