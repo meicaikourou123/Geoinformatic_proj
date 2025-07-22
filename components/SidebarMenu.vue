@@ -3,22 +3,30 @@
     <div class="filter-row">
       <n-date-picker
           v-model:value="dateRange"
-          type="daterange"
+          type="datetimerange"
           clearable
           placeholder="Select date range"
-          :default-calendar-start-time="new Date('2010-10-01').getTime()"
           class="date-picker"
       />
+<!--      <pre>{{ JSON.stringify(dateRange) }}</pre>-->
       <n-button type="primary" class="query-button" size="small"  @click="queryData">query</n-button>
     </div>
 
-
-
-
     <div class="result-panel" v-if="queryResult.length > 0">
-      <div v-for="(item, index) in queryResult" :key="index" class="result-item">
-        {{ item.t_id }}
+      <div class="summary-row">
+        Found {{ queryResult.length }} Strom records.
       </div>
+<!--      <div v-for="(item, index) in queryResult" :key="index" class="result-item">-->
+<!--        {{ item.t_id }}-->
+<!--      </div>-->
+      <n-data-table
+          :columns="columns"
+          :data="queryResult"
+          :pagination="false"
+          :bordered="true"
+          size="small"
+          :row-key="row => row.stormcode"
+      />
     </div>
   </div>
 </template>
@@ -26,35 +34,51 @@
 <script setup>
 import { ref } from 'vue'
 import { useDraggable } from '@/composables/useDraggable'
-import { NTree, NDatePicker, NButton } from 'naive-ui'
+import {formatTimestamp} from "~/utils/formats.ts";
+import { NTree, NDatePicker, NButton,NDataTable } from 'naive-ui'
 
 const sidebar = ref(null)
 const { startDrag } = useDraggable(sidebar)
 const queryResult = ref([])
 
-const data = ref([])
+
+const columns = [
+
+  {
+    title: 'Storm code',
+    key: 'stormcode'
+  },
+  {
+    title: 'Start time',
+    key: 'start_time'
+  },
+  {
+    title: 'end time',
+    key: 'end_time'
+  },
+  {
+    type: 'selection'
+  },
+]
 const dateRange = ref([
-  new Date('2010-10-01'),
-  new Date('2011-10-01')
+  1183135260000, Date.now()
 ])
 
-const treeData = ref([])
-
-// 模拟查询
 const queryData = async () => {
   const [startDate, endDate] = dateRange.value
-
-  const startStr = dateRange.value[0].toISOString()
-  const endStr = dateRange.value[1].toISOString()
+// if input the date in the datepicker, we need to change it from timestamp into time string
+  console.log(startDate,endDate)
+  const startStr = formatTimestamp(dateRange.value[0])
+  const endStr =  formatTimestamp(dateRange.value[1])
   console.log(startStr)
-  const res = await $fetch('/api/query-data',{
+  console.log(endStr)
+  const res = await $fetch('/api/storms',{
     query:{start:startStr,
       end:endStr
     }
   })
-  console.log("查询中")
   queryResult.value = res
-  console.log('TestPanel 查询结果:', res)
+  console.log('query result:', res)
 }
 
 
@@ -62,8 +86,7 @@ const forceUpdatePanel = ref(false)
 
 onMounted(() => {
   dateRange.value = [
-    new Date('2010-10-01'),
-    new Date('2011-10-01')
+    1277935200000, 1280440800000   //this is the ms timestamp
   ]
 })
 </script>
@@ -74,7 +97,8 @@ onMounted(() => {
   position: absolute;
   top: 20px;
   left: 20px;
-  width: 300px;
+  width: 320px;
+  height: auto;
   background: white;
   border: 1px solid #ccc;
   padding: 12px;
@@ -85,6 +109,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  //resize: vertical;
+  overflow: auto;
 }
 
 .date-picker {
@@ -95,6 +121,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+  border: 1px solid #8e8d8d;
 }
 
 .date-picker {
@@ -110,7 +137,8 @@ onMounted(() => {
 }
 
 .result-panel {
-  max-height: 160px;
+  max-height: 500px;
+  //height: auto;
   overflow-y: auto;
   border: 1px solid #ddd;
   padding: 8px;
@@ -118,9 +146,10 @@ onMounted(() => {
   font-size: 14px;
 }
 
-.result-item {
-  padding: 4px 0;
-  border-bottom: 1px dashed #ccc;
+.summary-row {
+  font-weight: bold;
+  margin-bottom: 8px;
 }
+
 
 </style>
