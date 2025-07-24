@@ -8,5 +8,8 @@
 </script>
 
 <style scoped>
-
+#map {
+  position: relative;
+  z-index: 0;
+}
 </style>

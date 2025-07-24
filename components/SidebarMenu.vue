@@ -71,12 +71,30 @@ const onCheckboxChange = (newKeys) => {
   selectedKeys.value = newKeys
   const selected = queryResult.value.filter(row => newKeys.includes(row.stormcode))
 
-  // 遍历每一条被勾选的数据，提取 points 并发射事件
   selected.forEach(row => {
     if (Array.isArray(row.points)) {
-      const coordinates = row.points.map(p => [p.lon, p.lat])
-      emit('drawTrajectory', coordinates)
+      emit('drawTrajectory', {
+        code: row.stormcode,
+        points: row.points.map(p => ({
+          lon: p.lon,
+          lat: p.lat,
+          area: p.area,
+          time: p.time
+        })),
+        checked: true
+      })
     }
+  })
+
+  // Handle deselected items
+  const unselected = queryResult.value.filter(row => !newKeys.includes(row.stormcode))
+  unselected.forEach(row => {
+    emit('drawTrajectory', {
+      code: row.stormcode,
+      area:row.area,
+      points: [],
+      checked: false
+    })
   })
 }
 
@@ -86,10 +104,9 @@ const queryData = async () => {
   console.log(startDate,endDate)
   const startStr = formatTimestamp(dateRange.value[0])
   const endStr =  formatTimestamp(dateRange.value[1])
-  console.log(startStr)
-  console.log(endStr)
   const res = await $fetch('/api/storms',{
-    query:{start:startStr,
+    query:{
+      start:startStr,
       end:endStr
     }
   })
