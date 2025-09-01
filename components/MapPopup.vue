@@ -13,7 +13,7 @@
       </n-switch>
       <n-button strong secondary circle type="primary" size="tiny">
         <template #icon>
-          <n-icon><Search /></n-icon>
+          <img src="/icons/search.svg" alt="search" style="width: 16px; height: 16px;" />
         </template>
       </n-button>
     </n-space>
@@ -59,7 +59,6 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { NSwitch, NSpace,NTimePicker,NRadio,NButton } from 'naive-ui'
-import { Search } from '@vicons/ionicons5'
 // popup refs
 const popup = ref(null)
 const popupContent = ref(null)
@@ -139,5 +138,11 @@ defineExpose({
 
 #queryPanel {
   margin-top: 10px;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
 }
 </style>
