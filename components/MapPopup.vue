@@ -1,5 +1,5 @@
 <template>
-  <div id="popup" class="ol-popup" ref="popup" @click.stop @mousedown.stop>
+  <div id="popup" class="ol-popup" ref="popup" @click.stop @mousedown.stop @dblclick.stop>
     <div id="popup-content" ref="popupContent"></div>
 
     <n-space justify="space-between" align="center">
@@ -20,45 +20,24 @@
 
     <div id="queryPanel" v-show="active">
       <client-only>
-        <n-space>
+        <n-space vertical>
           <n-time-picker v-model:value="startTime" format="HH:mm:ss" size="small" />
           <n-time-picker v-model:value="endTime" format="HH:mm:ss" size="small" />
         </n-space>
-          <n-space>
-            <n-radio
-                :checked="checkedValue === '1 km'"
-                value="1 km"
-                name="basic-demo"
-                @change="handleChange"
-            >
-              1 km
-            </n-radio>
-            <n-radio
-                :checked="checkedValue === '2 km'"
-                value="2 km"
-                name="basic-demo"
-                @change="handleChange"
-            >
-              2 km
-            </n-radio>
-
-            <n-radio
-                :checked="checkedValue === '5 km'"
-                value="5 km"
-                name="basic-demo"
-                @change="handleChange"
-            >
-              5 km
-            </n-radio>
+          <n-space vertical>
+            <span style="font-size: 12px;">Buffer Distance (5-100km)</span>
+            <n-input-number v-model:value="bufferDistanceInMeters" size="small" @dblclick.stop.prevent />
           </n-space>
+
       </client-only>
+
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { NSwitch, NSpace,NTimePicker,NRadio,NButton } from 'naive-ui'
+import { NSwitch, NSpace, NTimePicker, NRadio, NButton,NSlider,NInputNumber  } from 'naive-ui'
 // popup refs
 const popup = ref(null)
 const popupContent = ref(null)
@@ -76,16 +55,11 @@ const popupCenter = ref(null)
 
 const emit = defineEmits(['drawBufferCircle'])
 
-const bufferDistanceInMeters = computed(() => {
-  const value = checkedValue.value
-  if (value === '1 km') return 1000
-  if (value === '2 km') return 2000
-  if (value === '5 km') return 5000
-  return 0
-})
+const bufferDistanceInMeters = ref(10) // kilometers
 
 watch(bufferDistanceInMeters, (newVal) => {
-  emit('drawBufferCircle', { distance: newVal, center: startTime.value })
+  if (!popupCenter.value) return
+  emit('drawBufferCircle', { distance: newVal * 1000, center: popupCenter.value })
 })
 
 function handleChange(event) {
