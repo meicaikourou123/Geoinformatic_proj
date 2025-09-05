@@ -1,0 +1,58 @@
+CREATE TABLE dBz_10_19(
+                            idx INTEGER NOT NULL,
+                            date_time TIMESTAMP NOT NULL,
+                            dbz_av DOUBLE PRECISION NOT NULL,
+                            dbz_max DOUBLE PRECISION NOT NULL,
+                            area INTEGER NOT NULL,
+                            vel_x DOUBLE PRECISION ,
+                            vel_y DOUBLE PRECISION ,
+                            num_pol INTEGER NOT NULL,
+                            temp_seq INTEGER NOT NULL,
+                            geom GEOMETRY(POINT, 4326) NOT NULL,
+                            lon DOUBLE PRECISION NOT NULL,
+                            lat DOUBLE PRECISION NOT NULL
+);
+CREATE INDEX dBz_10_19_datetime ON dBz_10_19(date_time);
+
+
+CREATE TABLE pa_tot(
+                       pa_id varchar(30) NOT NULL,
+                       date_time TIMESTAMP NOT NULL,
+                       data NUMERIC(10, 2)
+);
+
+CREATE INDEX idx_pa_tot_datetime ON pa_tot(date_time);
+
+
+
+CREATE TABLE dv_tot(
+                       dv_id varchar(30) NOT NULL,
+                       date_time TIMESTAMP NOT NULL,
+                       data NUMERIC(10, 2)
+);
+
+CREATE INDEX idx_dv_tot_datetime ON dv_tot(date_time);
+
+-- this create the sensor table, change the name, create another table
+
+CREATE TABLE winv_sensor (
+                             idsensore VARCHAR,
+                             start_year VARCHAR,
+                             end_year VARCHAR,
+                             years INTEGER,
+                             total_data INTEGER,
+                             nan_percentage DOUBLE PRECISION,
+                             idstazione INTEGER,
+                             nome_tipologia TEXT,
+                             datainizio DATE,
+                             quotasensore INTEGER,
+                             aggregazione_temporale INTEGER,
+                             nomestazione TEXT,
+                             lat DOUBLE PRECISION,
+                             lon DOUBLE PRECISION,
+                             comune TEXT,
+                             provincia TEXT,
+                             geom geometry(Point, 32632) -- EPSG:32632 = WGS 84 / UTM zone 32N
+);
+
+CREATE INDEX idx_winv_sensor_geom ON winv_sensor USING GIST (geom);
