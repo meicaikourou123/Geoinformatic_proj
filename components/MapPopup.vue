@@ -11,7 +11,7 @@
           Off
         </template>
       </n-switch>
-      <n-button strong secondary circle type="primary" size="tiny">
+      <n-button strong secondary circle type="primary" size="tiny"  @click="handleSearch">
         <template #icon>
           <img src="/icons/search.svg" alt="search" style="width: 16px; height: 16px;" />
         </template>
@@ -53,7 +53,7 @@ const checkedValue = ref('')
 
 const popupCenter = ref(null)
 
-const emit = defineEmits(['drawBufferCircle'])
+const emit = defineEmits(['drawBufferCircle', 'querySensors'])
 
 const bufferDistanceInMeters = ref(10) // kilometers
 
@@ -79,10 +79,23 @@ function updateTimeRange(centerTime) {
   startTime.value = new Date(center.getTime() - 60 * 60 * 1000)
   endTime.value = new Date(center.getTime() + 60 * 60 * 1000)
   console.log(startTime, endTime)
+
 }
 
 function disableNonNearbyTimes(ts) {
   return ts < startTime.value?.getTime() || ts > endTime.value?.getTime()
+}
+// Emits the 'querySensors' event with an object containing:
+//   - center: the popup center coordinates
+//   - distance: the buffer distance in meters
+function handleSearch() {
+  console.log("Searching sensors within buffer zone")
+
+  if (!popupCenter.value || !bufferDistanceInMeters.value) return
+  emit('querySensors', {
+    center: popupCenter.value,
+    distance: bufferDistanceInMeters.value*1000  // km → m
+  })
 }
 
 defineExpose({

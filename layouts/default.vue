@@ -4,7 +4,7 @@
       <SidebarMenu @drawTrajectory="onDrawTrajectory"/>
     </client-only>
     <NuxtPage />
-    <MapPopup ref="mapPopup" @drawBufferCircle="onDrawBufferCircle" />
+    <MapPopup ref="mapPopup" @drawBufferCircle="onDrawBufferCircle" @querySensors="handleQuerySensors"/>
   </div>
 </template>
 
@@ -25,6 +25,7 @@ import Point from 'ol/geom/Point'
 import Overlay from 'ol/Overlay'
 import MapPopup from '@/components/MapPopup.vue'
 import Circle from 'ol/geom/Circle'
+import { circular } from 'ol/geom/Polygon'
 
 const mapPopup = ref()
 
@@ -66,6 +67,7 @@ onMounted(() => {
   })
   map.addOverlay(popupOverlay)
 
+  // console.log(map.getView().getProjection().getCode())  //get the projection code
   map.on('click', function (evt) {
     const clickedEl = evt.originalEvent.target
     if (mapPopup.value.getElement().contains(clickedEl)) return
@@ -160,15 +162,15 @@ function onDrawTrajectory({ code, points, checked }) {
 function onDrawBufferCircle({ distance, center }) {
   if (!distance || !center || !Array.isArray(center)) return
 
-  // Remove previous buffer circles
   const existingBuffers = vectorSource.getFeatures().filter(f => {
     const id = f.getId()
     return id && id.startsWith('buffer-')
   })
   existingBuffers.forEach(f => vectorSource.removeFeature(f))
 
-  const coord = fromLonLat(center)
-  const circle = new Circle(coord, distance)
+  const [lon, lat] = center
+  const circle = circular([lon, lat], distance).transform('EPSG:4326', 'EPSG:3857')
+
   const circleFeature = new Feature(circle)
   circleFeature.setId(`buffer-${center.join('-')}-${distance}`)
 
@@ -185,6 +187,62 @@ function onDrawBufferCircle({ distance, center }) {
   )
 
   vectorSource.addFeature(circleFeature)
+}
+
+async function handleQuerySensors({ center, distance }) {
+  const [lon, lat] = center
+  try {
+    const res = await fetch('/api/sensors-in-buffer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lon, lat, radius: distance }) // 转为米
+    })
+
+    const data = await res.json()
+    console.log('query result：', data)
+
+    // 清除旧的传感器点
+    const existingSensors = vectorSource.getFeatures().filter(f => {
+      const id = f.getId()
+      return id && id.startsWith('sensor-')
+    })
+    existingSensors.forEach(f => vectorSource.removeFeature(f))
+
+    // 添加新的传感器点
+    Object.entries(data).forEach(([tableName, sensors]) => {
+      sensors.forEach(sensor => {
+        const lon = parseFloat(sensor.lon)
+        const lat = parseFloat(sensor.lat)
+        if (isNaN(lon) || isNaN(lat)) return
+
+        const coord = fromLonLat([lon, lat])
+        const feature = new Feature({
+          geometry: new Point(coord)
+        })
+
+        feature.setId(`sensor-${tableName}-${sensor.idsensore || Math.random()}`)
+        feature.setProperties({
+          ...sensor,
+          source: tableName
+        })
+
+        feature.setStyle(
+            new Style({
+              image: new CircleStyle({
+                radius: 5,
+                fill: new Fill({ color: 'orange' }),
+                stroke: new Stroke({ color: 'black', width: 1 })
+              })
+            })
+        )
+
+        vectorSource.addFeature(feature)
+      })
+    })
+
+  } catch (error) {
+    console.error('query fail：', error)
+  }
 }
 </script>
 

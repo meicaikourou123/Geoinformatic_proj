@@ -1,6 +1,10 @@
 import fs from 'fs';
 import csv from 'csv-parser';
 import { Client } from 'pg';
+import proj4 from 'proj4';  //must install proj4 : npm install proj4
+
+// define EPSG:32632
+proj4.defs("EPSG:32632", "+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs");
 
 const client = new Client({
     user: 'postgres',
@@ -10,9 +14,7 @@ const client = new Client({
     port: 5432,
 });
 
-
-const csvFilePath = '/Users/sunzheng/Downloads/01datasets/dataset_winv_summary3.csv';
-
+const csvFilePath = '/Users/sunzheng/Downloads/01datasets/dataset_temp_summary3.csv';
 
 const columns = {
     nan_percentage: 'NaN percentage',
@@ -37,9 +39,12 @@ async function insertRow(row) {
     try {
         const lat = parseFloat(row[columns.lat]);
         const lon = parseFloat(row[columns.lon]);
-        const geom = (lat && lon)
-            ? `SRID=32632;POINT(${lon} ${lat})`
-            : null;
+
+        let geom = null;
+        if (!isNaN(lat) && !isNaN(lon)) {
+            const [x, y] = proj4('EPSG:4326', 'EPSG:32632', [lon, lat]); // 注意 lon, lat 顺序
+            geom = `SRID=32632;POINT(${x} ${y})`;
+        }
 
         const values = [
             row[columns.idsensore] || null,
@@ -62,36 +67,22 @@ async function insertRow(row) {
         ];
 
         const query = `
-      INSERT INTO winv_sensor (
-        idsensore,
-        start_year,
-        end_year,
-        years,
-        total_data,
-        nan_percentage,
-        idstazione,
-        nome_tipologia,
-        datainizio,
-        quotasensore,
-        aggregazione_temporale,
-        nomestazione,
-        lat,
-        lon,
-        comune,
-        provincia,
-        geom
-      ) VALUES (
-        $1, $2, $3, $4, $5,
-        $6, $7, $8, $9, $10,
-        $11, $12, $13, $14,
-        $15, $16, ST_GeomFromText($17)
-      )
-    `;
+            INSERT INTO temp_sensor (
+                idsensore, start_year, end_year, years, total_data,
+                nan_percentage, idstazione, nome_tipologia, datainizio, quotasensore,
+                aggregazione_temporale, nomestazione, lat, lon, comune, provincia, geom
+            ) VALUES (
+                $1, $2, $3, $4, $5,
+                $6, $7, $8, $9, $10,
+                $11, $12, $13, $14, $15, $16,
+                ST_GeomFromText($17)
+            )
+        `;
 
         await client.query(query, values);
-        console.log('✔ insert successfully');
+        console.log('✔ 插入成功');
     } catch (err) {
-        console.error('❌insert fail:', err.message);
+        console.error('❌ 插入失败:', err.message);
     }
 }
 
