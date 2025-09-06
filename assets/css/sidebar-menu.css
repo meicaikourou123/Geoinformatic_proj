@@ -1,9 +1,10 @@
 .sidebar {
     position: absolute;
-    top: 20px;
-    left: 20px;
+    top: 5px;
+    left: 30px;
     width: 320px;
     height: auto;
+    max-height: 500px;
     background: white;
     border: 1px solid #ccc;
     padding: 12px;

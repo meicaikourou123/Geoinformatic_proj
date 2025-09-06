@@ -4,7 +4,13 @@
       <SidebarMenu @drawTrajectory="onDrawTrajectory"/>
     </client-only>
     <NuxtPage />
-    <MapPopup ref="mapPopup" @drawBufferCircle="onDrawBufferCircle" @querySensors="handleQuerySensors"/>
+    <TrackInfoPanel
+      v-show="!!selectedPoint"
+      :track-data="selectedPoint"
+      @querySensors="handleQuerySensors"
+      @drawBufferCircle="onDrawBufferCircle"
+      @close="handleClosePanel"
+    />
   </div>
 </template>
 
@@ -22,16 +28,13 @@ import Feature from 'ol/Feature'
 import LineString from 'ol/geom/LineString'
 import { Stroke, Style, Fill, Circle as CircleStyle } from 'ol/style'
 import Point from 'ol/geom/Point'
-import Overlay from 'ol/Overlay'
-import MapPopup from '@/components/MapPopup.vue'
-import Circle from 'ol/geom/Circle'
+import TrackInfoPanel from '@/components/TrackInfoPanel.vue'
 import { circular } from 'ol/geom/Polygon'
 
-const mapPopup = ref()
+const selectedPoint = ref(null)
 
 let map
 let vectorSource
-let popupOverlay
 
 onMounted(() => {
   vectorSource = new VectorSource()
@@ -59,45 +62,17 @@ onMounted(() => {
     })
   })
 
-  popupOverlay = new Overlay({
-    element: mapPopup.value.getElement(),
-    positioning: 'bottom-center',
-    stopEvent: false,
-    offset: [0, 30]
-  })
-  map.addOverlay(popupOverlay)
-
-  // console.log(map.getView().getProjection().getCode())  //get the projection code
   map.on('click', function (evt) {
-    const clickedEl = evt.originalEvent.target
-    if (mapPopup.value.getElement().contains(clickedEl)) return
-
     const feature = map.forEachFeatureAtPixel(evt.pixel, f => f)
-
     if (feature && feature.getGeometry().getType() === 'Point') {
       const lon = feature.get('lon')
       const lat = feature.get('lat')
       const time = feature.get('time')
       const area = feature.get('area')
       const code = feature.get('stormcode')
-      const coordinate = evt.coordinate
+      console.log(code, lon, lat)
 
-      if (lon && lat) {
-        const html = `
-          <p><strong>Storm cell Information</strong></p>
-          <p><strong>Code:</strong> ${code}</p>
-          <p><strong>Lon:</strong> ${lon}</p>
-          <p><strong>Lat:</strong> ${lat}</p>
-          <p><strong>Area:</strong> ${area}</p>
-          <p><strong>Time:</strong> ${time}</p>
-        `
-        mapPopup.value.setContent(html, [parseFloat(lon), parseFloat(lat)])
-        mapPopup.value.updateTimeRange(time)
-      }
-
-      popupOverlay.setPosition(coordinate)
-    } else {
-      popupOverlay.setPosition(undefined)
+      selectedPoint.value = { lon, lat, time, area, code }
     }
   })
 })
@@ -187,6 +162,31 @@ function onDrawBufferCircle({ distance, center }) {
   )
 
   vectorSource.addFeature(circleFeature)
+}
+
+function clearBufferCircles () {
+  if (!vectorSource) return
+  const buffers = vectorSource.getFeatures().filter(f => {
+    const id = f.getId()
+    return id && id.startsWith('buffer-')
+  })
+  buffers.forEach(f => vectorSource.removeFeature(f))
+}
+function clearSensorPoints () {
+  if (!vectorSource) return
+  const sensors = vectorSource.getFeatures().filter(f => {
+    const id = f.getId()
+    return id && id.startsWith('sensor-')
+  })
+  sensors.forEach(f => vectorSource.removeFeature(f))
+}
+
+function handleClosePanel () {
+  // close panel
+  selectedPoint.value = null
+  // remove the buffer and sensor points
+  clearBufferCircles()
+  clearSensorPoints()
 }
 
 async function handleQuerySensors({ center, distance }) {
