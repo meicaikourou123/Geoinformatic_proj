@@ -1,6 +1,16 @@
 <template>
-  <div class="custom-popup-panel" ref="popup" @click.stop @mousedown="startDrag">
-    <button class="tip-close" @click="emit('close')" aria-label="Close">×</button>
+  <div class="custom-popup-panel" ref="popup" @click.stop>
+    <div class="panel-header" @mousedown="startDrag">
+      <div class="title">Track Info</div>
+      <client-only>
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <button class="tip-close" @click="emit('close')" aria-label="Close">×</button>
+          </template>
+          Close this Panel
+        </n-tooltip>
+      </client-only>
+    </div>
     <div id="popup-content" ref="popupContent"></div>
     <div v-if="trackData && Object.keys(trackData).length" style="margin-top: 8px;">
       <n-grid :cols="2" :x-gap="1" :y-gap="4" class="info-grid">
@@ -27,39 +37,68 @@
     </div>
 
     <n-space justify="space-between" align="center">
-      <n-switch v-model:value="active" @click.stop>
-        <template #checked>
-          On
-        </template>
-        <template #unchecked>
-          Off
-        </template>
-      </n-switch>
-      <n-button strong secondary circle type="primary" size="tiny"  @click="handleSearch">
-        <template #icon>
-          <img src="/icons/search.svg" alt="search" style="width: 16px; height: 16px;" />
-        </template>
-      </n-button>
+
+      <client-only>
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <n-switch v-model:value="active" @click.stop @mousedown.stop>
+              <template #checked>
+                On
+              </template>
+              <template #unchecked>
+                Off
+              </template>
+            </n-switch>
+          </template>
+          Open Query Panel
+        </n-tooltip>
+      </client-only>
+
+
     </n-space>
 
     <div id="queryPanel" v-show="active">
       <client-only>
-        <n-space >
-          <n-time-picker v-model:value="startTime" format="HH:mm:ss" size="small" />
-          <n-time-picker v-model:value="endTime" format="HH:mm:ss" size="small" />
-        </n-space>
-          <n-space vertical>
-            <span style="font-size: 12px;">Buffer Distance (5-100km)</span>
-            <n-input-number
-              v-model:value="bufferDistanceInMeters"
-              size="small"
-              :min="1"
-              :max="200"
-              :step="1"
-              @update:value="onRadiusChange"
-            />
+          <n-space vertical :size="4">
+            <span style="font-size: 12px;">Buffer Radius (5-100km)</span>
+            <div class="slider-row" >
+              <n-slider
+                  v-model:value="bufferDistanceInMeters"
+                  :min="5"
+                  :step="5"
+                  @mousedown.stop
+                  @touchstart.stop
+                  @pointerdown.stop
+                  style="flex: 1;"
+              />
+              <n-tooltip trigger="hover">
+                <template #trigger>
+              <n-button strong secondary circle type="primary" size="tiny" @click="handleSearch" >
+                <template #icon>
+                  <img src="/icons/display.svg" alt="display" style="width: 16px; height: 16px;" />
+                </template>
+              </n-button>
+                </template>
+                Display the Sensors inside buffer
+              </n-tooltip>
+<!--              Here display the sensor inside the buffer-->
+            </div>
           </n-space>
+        <n-space >
+          <n-time-picker v-model:value="startTime" format="HH:mm:ss" size="small" @mousedown.stop />
+          <n-time-picker v-model:value="endTime" format="HH:mm:ss" size="small" @mousedown.stop />
+          <n-tooltip trigger="hover">
+            <template #trigger>
+              <n-button strong secondary circle type="primary" size="tiny"  >
+                <template #icon>
+                  <img src="/icons/search.svg" alt="search" style="width: 16px; height: 16px;" />
+                </template>
+              </n-button>
+            </template>
+            Query Sensor's Data Chart
+          </n-tooltip>
 
+        </n-space>
       </client-only>
 
     </div>
@@ -76,7 +115,7 @@ const props = defineProps({
 
 import { ref, computed, watch } from 'vue'
 import { useDraggable } from '@/composables/useDraggable'
-import { NSwitch, NSpace, NTimePicker, NRadio, NButton, NSlider, NInputNumber, NGrid, NGi } from 'naive-ui'
+import { NSwitch, NSpace, NTimePicker, NRadio, NButton, NSlider, NInputNumber, NGrid, NGi,NTooltip } from 'naive-ui'
 
 const popup = ref(null)
 const popupContent = ref(null)
@@ -96,7 +135,7 @@ const popupCenter = ref(null)
 
 const emit = defineEmits(['drawBufferCircle', 'querySensors'])
 
-const bufferDistanceInMeters = ref(10) // kilometers
+const bufferDistanceInMeters = ref(5) // kilometers
 
 watch(
   () => props.trackData,
@@ -171,7 +210,7 @@ defineExpose({
   border-radius: 10px;
   border: 1px solid #ccc;
   width: 320px;
-  height: 180px;
+  height: 185px;
   font-size: 12px;
   position: fixed;
   bottom: 5px;
@@ -180,10 +219,18 @@ defineExpose({
   z-index: 999;
   pointer-events: auto;
 }
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: move; /* drag handle */
+  margin-bottom: 6px;
+}
+.title {
+  font-weight: 600;
+  font-size: 13px;
+}
 .tip-close {
-  position: absolute;
-  right: 6px;
-  top: 6px;
   width: 24px;
   height: 24px;
   line-height: 22px;
@@ -191,7 +238,7 @@ defineExpose({
   border: none;
   background: transparent;
   color: #666;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
 }
 .tip-close:hover {
@@ -201,10 +248,11 @@ defineExpose({
   margin-top: 10px;
 }
 
-.icon {
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 .info-grid { margin-top: 8px; }
 .info-item { display: flex; gap: 1px; align-items: baseline; line-height: 1.6; }
