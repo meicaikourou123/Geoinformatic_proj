@@ -126,7 +126,7 @@
           <n-tooltip trigger="hover">
             <template #trigger>
               <!--              Here we should have the query the sensor data chart-->
-              <n-button strong secondary circle type="primary" size="tiny"  @click="emit('querySelectedSensors')">
+              <n-button strong secondary circle type="primary" size="tiny" @click="handleQuerySelectedSensors">
                 <template #icon>
                   <img src="/icons/search.svg" alt="search" style="width: 16px; height: 16px;" />
                 </template>
@@ -173,11 +173,23 @@ const checkedValue = ref('')
 
 const popupCenter = ref(null)
 
-const emit = defineEmits(['drawBufferCircle', 'querySensors', 'selectSensor', 'toggleSensor', 'toggleAllSensors', 'querySelectedSensors'  ])
+const emit = defineEmits(['drawBufferCircle', 'querySensors', 'selectSensor', 'toggleSensor', 'toggleAllSensors', 'querySelectedSensors', 'close'])
 
 const bufferDistanceInMeters = ref(5) // kilometers
 
 const checkedMap = ref({})
+
+const timeRange = computed(() => {
+  const s = startTime.value
+  const e = endTime.value
+  if (s == null || e == null) return null
+  return {
+    startMs: s,
+    endMs: e,
+    startISO: new Date(s).toISOString(),
+    endISO: new Date(e).toISOString()
+  }
+})
 
 const selectedSensors = computed(() =>
   (props.sensors || []).filter((s, i) => checkedMap.value[getKey(s, i)] !== false)
@@ -260,7 +272,7 @@ function updateTimeRange(centerTime) {
 }
 
 function disableNonNearbyTimes(ts) {
-  return ts < startTime.value?.getTime() || ts > endTime.value?.getTime()
+  return (startTime.value != null && ts < startTime.value) || (endTime.value != null && ts > endTime.value)
 }
 
 function handleSearch() {
@@ -277,6 +289,13 @@ function onRadiusChange(val) {
   bufferDistanceInMeters.value = km
   if (!popupCenter.value) return
   emit('drawBufferCircle', { distance: km * 1000, center: popupCenter.value })
+}
+
+function handleQuerySelectedSensors () {
+  emit('querySelectedSensors', {
+    selected: selectedSensors.value,
+    timeRange: timeRange.value
+  })
 }
 
 defineExpose({

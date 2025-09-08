@@ -338,17 +338,30 @@ function handleToggleAllSensors ({ checked, sensors }) {
   })
 }
 
-async function onQuerySelectedSensors () {
-  const selected = panelRef.value?.getSelectedSensors?.() || []
-  console.log('Selected sensors for detail:', selected)
+async function onQuerySelectedSensors (payload) {
+  const { selected = [], timeRange = null } = payload || {}
 
-  // TODO: before query the api, we should reformat the data
-  //
-  // const resp = await $fetch('/api/sensor-detail', {
-  //   method: 'POST',
-  //   body: selected.map(s => ({ table: s.table, id: s.idsensore }))
-  // })
+  console.log(selected)
+  console.log(timeRange)
+  if (!selected.length || !timeRange) {
+    console.log('No sensors or timeRange provided')
+    return
+  }
 
+
+  try {
+    const resp = await $fetch('/api/sensor-detail', {
+      method: 'POST',
+      body: {
+        sensors: selected.map(s => ({ table: s.table, id: s.idsensore })),
+        start: timeRange.startISO,
+        end: timeRange.endISO
+      }
+    })
+    console.log('Selected sensors detail:', resp)
+  } catch (e) {
+    console.error('Fetch sensor detail failed:', e)
+  }
 }
 </script>
 
@@ -358,5 +371,10 @@ html, body, #__nuxt, #app {
   height: 100%;
   margin: 0;
   padding: 0;
+}
+.ol-zoom {
+  left: auto;     /* 取消默认的 left */
+  right: 12px;    /* 靠右 */
+  top: 12px;      /* 靠上 */
 }
 </style>
