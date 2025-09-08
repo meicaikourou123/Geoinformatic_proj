@@ -1,7 +1,7 @@
 <template>
   <div class="custom-popup-panel" ref="popup" @click.stop>
     <div class="panel-header" @mousedown="startDrag">
-      <div class="title">Track Info</div>
+      <div class="title">Trajectory Info</div>
       <client-only>
         <n-tooltip trigger="hover">
           <template #trigger>
@@ -12,7 +12,7 @@
       </client-only>
     </div>
     <div id="popup-content" ref="popupContent"></div>
-    <div v-if="trackData && Object.keys(trackData).length" style="margin-top: 8px;">
+    <div v-if="trackData && Object.keys(trackData).length" style="margin-top: 2px;">
       <n-grid :cols="2" :x-gap="1" :y-gap="4" class="info-grid">
         <n-gi>
           <div class="info-item"><span class="label">Code</span><span class="value">{{ trackData.code ?? '—' }}</span></div>
@@ -37,7 +37,6 @@
     </div>
 
     <n-space justify="space-between" align="center">
-
       <client-only>
         <n-tooltip trigger="hover">
           <template #trigger>
@@ -60,7 +59,7 @@
     <div id="queryPanel" v-show="active">
       <client-only>
           <n-space vertical :size="4">
-            <span style="font-size: 12px;">Buffer Radius (5-100km)</span>
+            <span style="font-size: 12px; font-weight: 600">Buffer Radius (5-100km)</span>
             <div class="slider-row" >
               <n-slider
                   v-model:value="bufferDistanceInMeters"
@@ -84,12 +83,50 @@
 <!--              Here display the sensor inside the buffer-->
             </div>
           </n-space>
-        <n-space >
+
+        <div v-if="sensors && sensors.length" class="sensor-list">
+          <div class="sensor-list-header">
+            <span>Sensors in Buffer ({{ sensors.length }})</span>
+            <n-tooltip trigger="hover">
+              <template #trigger>
+                <n-checkbox
+                    :checked="allChecked"
+                    :indeterminate="isIndeterminate"
+                    @update:checked="onToggleAll"
+                    @mousedown.stop
+                    @click.stop
+                />
+              </template>
+              (Un)Check All
+            </n-tooltip>
+
+
+          </div>
+          <div class="sensor-scroll">
+            <div
+              v-for="(s, i) in sensors"
+              :key="(s.idsensore || i) + '-' + (s.table || '')"
+              class="sensor-row"
+            >
+              <div class="sensor-row-main" @click="emit('selectSensor', s)">
+                <div class="sensor-name">ID: {{ s.idsensore || '—' }} · {{ s.data_type || '—' }}--{{ s.nomestazione || s.nome_tipologia || s.idsensore }} </div>
+              </div>
+              <n-checkbox
+                :checked="checkedMap[getKey(s, i)] ?? true"
+                @update:checked="onToggleSensor(s, i, $event)"
+                @mousedown.stop
+                @click.stop
+              />
+            </div>
+          </div>
+        </div>
+        <n-space class="timeQueryBar">
           <n-time-picker v-model:value="startTime" format="HH:mm:ss" size="small" @mousedown.stop />
           <n-time-picker v-model:value="endTime" format="HH:mm:ss" size="small" @mousedown.stop />
           <n-tooltip trigger="hover">
             <template #trigger>
-              <n-button strong secondary circle type="primary" size="tiny"  >
+              <!--              Here we should have the query the sensor data chart-->
+              <n-button strong secondary circle type="primary" size="tiny"  @click="emit('querySelectedSensors')">
                 <template #icon>
                   <img src="/icons/search.svg" alt="search" style="width: 16px; height: 16px;" />
                 </template>
@@ -97,7 +134,6 @@
             </template>
             Query Sensor's Data Chart
           </n-tooltip>
-
         </n-space>
       </client-only>
 
@@ -110,12 +146,16 @@ const props = defineProps({
   trackData: {
     type: Object,
     default: () => ({})
+  },
+  sensors: {
+    type: Array,
+    default: () => []
   }
 })
 
 import { ref, computed, watch } from 'vue'
 import { useDraggable } from '@/composables/useDraggable'
-import { NSwitch, NSpace, NTimePicker, NRadio, NButton, NSlider, NInputNumber, NGrid, NGi,NTooltip } from 'naive-ui'
+import { NSwitch, NSpace, NTimePicker, NButton, NSlider, NGrid, NGi, NTooltip, NCheckbox } from 'naive-ui'
 
 const popup = ref(null)
 const popupContent = ref(null)
@@ -133,9 +173,58 @@ const checkedValue = ref('')
 
 const popupCenter = ref(null)
 
-const emit = defineEmits(['drawBufferCircle', 'querySensors'])
+const emit = defineEmits(['drawBufferCircle', 'querySensors', 'selectSensor', 'toggleSensor', 'toggleAllSensors', 'querySelectedSensors'  ])
 
 const bufferDistanceInMeters = ref(5) // kilometers
+
+const checkedMap = ref({})
+
+const selectedSensors = computed(() =>
+  (props.sensors || []).filter((s, i) => checkedMap.value[getKey(s, i)] !== false)
+)
+
+const allChecked = computed(() => {
+  const list = props.sensors || []
+  if (!list.length) return false
+  return list.every((s, i) => checkedMap.value[getKey(s, i)] !== false)
+})
+
+const isIndeterminate = computed(() => {
+  const list = props.sensors || []
+  if (!list.length) return false
+  const count = list.reduce((acc, s, i) => acc + (checkedMap.value[getKey(s, i)] !== false ? 1 : 0), 0)
+  return count > 0 && count < list.length
+})
+
+function onToggleAll (checked) {
+  const list = props.sensors || []
+  const map = { ...checkedMap.value }
+  list.forEach((s, i) => { map[getKey(s, i)] = checked })
+  checkedMap.value = map
+  emit('toggleAllSensors', { checked, sensors: list })
+}
+
+function getKey (s, i) {
+  return `${s.idsensore ?? i}-${s.table ?? ''}`
+}
+
+watch(
+  () => props.sensors,
+  (list) => {
+    const map = { ...checkedMap.value }
+    ;(list || []).forEach((s, i) => {
+      const k = getKey(s, i)
+      if (!(k in map)) map[k] = true
+    })
+    checkedMap.value = map
+  },
+  { immediate: true, deep: true }
+)
+
+function onToggleSensor (s, i, checked) {
+  checkedMap.value[getKey(s, i)] = checked
+  emit('toggleSensor', { sensor: s, checked })
+}
 
 watch(
   () => props.trackData,
@@ -175,8 +264,6 @@ function disableNonNearbyTimes(ts) {
 }
 
 function handleSearch() {
-  console.log("Searching sensors within buffer zone")
-
   if (!popupCenter.value || !bufferDistanceInMeters.value) return
   emit('querySensors', {
     center: popupCenter.value,
@@ -199,64 +286,11 @@ defineExpose({
     popupCenter.value = pointData || null
   },
   updateTimeRange,
-  checkedValue
+  checkedValue,
+  getSelectedSensors: () => selectedSensors.value
 })
 </script>
 
 <style scoped>
-.custom-popup-panel {
-  background-color: lightblue;
-  padding: 6px 10px;
-  border-radius: 10px;
-  border: 1px solid #ccc;
-  width: 320px;
-  height: 185px;
-  font-size: 12px;
-  position: fixed;
-  bottom: 5px;
-  left: 30px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-  z-index: 999;
-  pointer-events: auto;
-}
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: move; /* drag handle */
-  margin-bottom: 6px;
-}
-.title {
-  font-weight: 600;
-  font-size: 13px;
-}
-.tip-close {
-  width: 24px;
-  height: 24px;
-  line-height: 22px;
-  text-align: center;
-  border: none;
-  background: transparent;
-  color: #666;
-  font-size: 16px;
-  cursor: pointer;
-}
-.tip-close:hover {
-  color: #111;
-}
-#queryPanel {
-  margin-top: 10px;
-}
-
-
-.slider-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.info-grid { margin-top: 8px; }
-.info-item { display: flex; gap: 1px; align-items: baseline; line-height: 1.6; }
-.info-item-time { margin-left: -55px; }
-.label { font-weight: 600;min-width: 30px; font-size: 12px; color: #222;  word-break: break-all; }
-.value {  color: #666;}
+@import '@/assets/css/trackInfoPanel.css';
 </style>

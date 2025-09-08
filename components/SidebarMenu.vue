@@ -1,45 +1,62 @@
 <template>
-  <div class="sidebar" ref="sidebar" @mousedown="startDrag">
-    <div class="filter-row">
-      <n-date-picker
-          v-model:value="dateRange"
-          type="datetimerange"
-          clearable
-          placeholder="Select date range"
-          class="date-picker"
-      />
+  <n-config-provider>
+    <div class="sidebar" ref="sidebar" @mousedown="startDrag">
+      <div class="filter-row">
+        <n-date-picker
+            v-model:value="dateRange"
+            type="datetimerange"
+            clearable
+            placeholder="Select date range"
+            class="date-picker"
+        />
 
-      <n-button type="primary" class="query-button" size="small"  @click="queryData">query</n-button>
-    </div>
-    <div class="result-panel" v-if="queryResult.length > 0">
-      <div class="summary-row">
-        Found {{ queryResult.length }} Strom records.
+        <n-button type="primary" class="query-button" size="small"  @click="queryData">query</n-button>
       </div>
-      <n-data-table
-          :columns="columns"
-          :data="queryResult"
-          :pagination="false"
-          :bordered="true"
-          size="small"
-          :row-key="row => row.stormcode"
-          :checked-row-keys="selectedKeys"
-          @update:checked-row-keys="onCheckboxChange"
-      />
+      <div class="result-panel" v-if="queryResult.length > 0">
+        <div class="summary-row">
+          Found {{ queryResult.length }} Strom records.
+        </div>
+        <n-data-table
+            :columns="columns"
+            :data="queryResult"
+            :pagination="false"
+            :bordered="true"
+            size="small"
+            :row-key="row => row.stormcode"
+            :checked-row-keys="selectedKeys"
+            @update:checked-row-keys="onCheckboxChange"
+            :theme-overrides="dataTableThemeOverrides"
+            :row-props="rowProps"
+        />
+      </div>
     </div>
-  </div>
+  </n-config-provider>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref,onMounted } from 'vue'
 import { useDraggable } from '@/composables/useDraggable'
 import {formatTimestamp} from "~/utils/formats.ts";
-import { NTree, NDatePicker, NButton,NDataTable } from 'naive-ui'
+import { NTree, NDatePicker, NButton, NDataTable, NConfigProvider } from 'naive-ui'
 
 
 
 const sidebar = ref(null)
 const { startDrag } = useDraggable(sidebar)
 const queryResult = ref([])
+
+const dataTableThemeOverrides = {
+  thPaddingSmall: '4px 8px',  // header becomes narrow
+  tdPaddingSmall: '2px 8px',  // unit grid become narrow
+  thFontSizeSmall: '8px',
+  tdFontSizeSmall: '8px'
+}
+
+const rowProps = () => ({
+  style: {
+    lineHeight: '20px' // row height more compact
+  }
+})
 
 const columns = [
 
@@ -101,7 +118,7 @@ const onCheckboxChange = (newKeys) => {
 const queryData = async () => {
   const [startDate, endDate] = dateRange.value
 // if input the date in the datepicker, we need to change it from timestamp into time string
-  console.log(startDate,endDate)
+//   console.log(startDate,endDate)
   const startStr = formatTimestamp(dateRange.value[0])
   const endStr =  formatTimestamp(dateRange.value[1])
   const res = await $fetch('/api/storms',{
@@ -111,7 +128,7 @@ const queryData = async () => {
     }
   })
   queryResult.value = res
-  console.log('query result:', res)
+  // console.log('query result:', res)
 }
 
 
@@ -126,4 +143,5 @@ onMounted(() => {
 
 <style>
 @import '@/assets/css/sidebar-menu.css';
+
 </style>

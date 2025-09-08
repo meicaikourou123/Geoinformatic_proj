@@ -7,8 +7,9 @@
     max-height: 500px;
     background: white;
     border: 1px solid #ccc;
+    border-radius: 10px;
     padding: 12px;
-    z-index: 1000;
+    z-index: 999;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     cursor: move;
     user-select: none;
@@ -43,7 +44,7 @@
 
 .result-panel {
     max-height: 500px;
-//height: auto;
+    height: auto;
     overflow-y: auto;
     border: 1px solid #ddd;
     padding: 8px;
@@ -55,3 +56,12 @@
     font-weight: bold;
     margin-bottom: 8px;
 }
+:deep(.n-data-table .n-data-table-td),
+:deep(.n-data-table .n-data-table-th) {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+}
+:deep(.n-data-table .n-data-table-td) {
+    line-height: 1.2;
+}
+

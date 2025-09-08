@@ -1,0 +1,133 @@
+.custom-popup-panel {
+    background-color: lightblue;
+    padding: 6px 10px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    width: 320px;
+    min-height: 300px;
+    max-height: 400px;
+    font-size: 12px;
+    position: fixed;
+    bottom: 1px;
+    left: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    z-index: 1000;
+    pointer-events: auto;
+    overflow: hidden;
+}
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: move; /* drag handle */
+    margin-bottom: 6px;
+}
+.title {
+    font-weight: 600;
+    font-size: 13px;
+}
+.tip-close {
+    width: 24px;
+    height: 24px;
+    line-height: 22px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    color: #666;
+    font-size: 16px;
+    cursor: pointer;
+}
+.tip-close:hover {
+    color: #111;
+}
+#queryPanel {
+    margin-top: 10px;
+}
+
+.slider-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-grid {
+    margin-top: 8px;
+}
+
+.info-item {
+    display: flex;
+    gap: 1px;
+    align-items: baseline;
+    line-height: 1.6;
+}
+
+.info-item-time {
+    margin-left: -55px;
+}
+
+.label {
+    font-weight: 600;
+    min-width: 30px;
+    font-size: 12px;
+    color: #222;
+    word-break: break-all;
+}
+
+.value {
+    color: #666;
+}
+
+.sensor-list {
+    margin-top: 2px;
+    max-height: 300px
+}
+
+.sensor-list-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 12px;
+    margin-bottom: 6px;
+}
+
+.sensor-scroll {
+    max-height: 180px;
+    overflow-y: auto;
+    border: 1px solid #e6e6e6;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.sensor-row {
+    padding: 8px 10px;
+    border-bottom: 1px dashed #eee;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.sensor-row-main {
+    flex: 1;
+    cursor: pointer;
+}
+
+.sensor-row:last-child {
+    border-bottom: none;
+}
+
+.sensor-row:hover {
+    background: #f7f7f7;
+}
+
+.sensor-name {
+    font-weight: 500;
+    font-size: 11px;
+    color: #222;
+}
+
+.timeQueryBar {
+    margin-top: 5px;
+}
