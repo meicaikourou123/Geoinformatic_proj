@@ -23,3 +23,14 @@ export function formatDateTime(date: Date | string): string {
 
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
+
+export function formatToPgTimestamp(iso: string) {
+    return iso.replace('T', ' ').replace('Z', '')
+}
+
+export function toPgTimestamp(ms: number) {
+    const d = new Date(ms)
+    const pad = (n: number) => n.toString().padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ` +
+        `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}

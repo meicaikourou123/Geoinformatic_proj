@@ -136,7 +136,9 @@ const forceUpdatePanel = ref(false)
 
 onMounted(() => {
   dateRange.value = [
-    1277935200000, 1280440800000   //this is the ms timestamp
+    // 1277935200000, 1280440800000   //this is the ms timestamp
+    // 1262304000000, 1262476800000  // here is 2010-01-01
+    1567296000000, 1569801600000     // 2019-09-01-----2019-09-30
   ]
 })
 </script>

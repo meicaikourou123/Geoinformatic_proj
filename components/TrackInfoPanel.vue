@@ -156,6 +156,7 @@ const props = defineProps({
 import { ref, computed, watch } from 'vue'
 import { useDraggable } from '@/composables/useDraggable'
 import { NSwitch, NSpace, NTimePicker, NButton, NSlider, NGrid, NGi, NTooltip, NCheckbox } from 'naive-ui'
+import { toPgTimestamp } from '~/utils/formats'
 
 const popup = ref(null)
 const popupContent = ref(null)
@@ -186,8 +187,8 @@ const timeRange = computed(() => {
   return {
     startMs: s,
     endMs: e,
-    startISO: new Date(s).toISOString(),
-    endISO: new Date(e).toISOString()
+    startISO: toPgTimestamp(s),
+    endISO: toPgTimestamp(e)
   }
 })
 
@@ -252,6 +253,8 @@ watch(
       if (!isNaN(center.getTime())) {
         startTime.value = center.getTime() - 60 * 60 * 1000
         endTime.value = center.getTime() + 60 * 60 * 1000
+
+
       }
     }
   },
@@ -269,6 +272,7 @@ function updateTimeRange(centerTime) {
   if (isNaN(center.getTime())) return
   startTime.value = center.getTime() - 60 * 60 * 1000
   endTime.value = center.getTime() + 60 * 60 * 1000
+
 }
 
 function disableNonNearbyTimes(ts) {

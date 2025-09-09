@@ -1,21 +1,12 @@
 import { defineEventHandler, getQuery } from 'h3'
 import { readBody } from 'h3'
-import { Client } from 'pg'
+import {createClient} from "~/server/utils/db";
 
 export default defineEventHandler(async (event) => {
     const body = await readBody(event)
     const { lon, lat, radius } = body
 
-    console.log(lon,lat,radius)
-
-    const client = new Client({
-        host: 'localhost',
-        port: 5432,
-        user: 'postgres',
-        password: '123456',
-        database: 'postgres'
-    })
-
+    const client = createClient()
     await client.connect()
 
     const tableNames = [

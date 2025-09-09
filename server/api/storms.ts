@@ -1,21 +1,12 @@
 import { defineEventHandler, getQuery } from 'h3'
-import { Client } from 'pg'
+import { createClient } from '~/server/utils/db'
 import { formatDateTime } from '~/utils/formats'
 export default defineEventHandler(async (event) => {
     const query = getQuery(event)
     const start = query.start as string
     const end = query.end as string
 
-    console.log('接收到的时间参数:', start, end)
-
-    const client = new Client({
-        host: 'localhost',
-        port: 5432,
-        user: 'postgres',
-        password: '123456',
-        database: 'postgres'
-    })
-
+    const client = createClient()
     await client.connect()
 
     const result = await client.query(

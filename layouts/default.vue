@@ -203,7 +203,7 @@ async function handleQuerySensors({ center, distance }) {
     const res = await fetch('/api/sensors-in-buffer', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ lon, lat, radius: distance }) // 转为米
+      body: JSON.stringify({ lon, lat, radius: distance }) // meters
     })
 
     const data = await res.json()
@@ -340,23 +340,45 @@ function handleToggleAllSensors ({ checked, sensors }) {
 
 async function onQuerySelectedSensors (payload) {
   const { selected = [], timeRange = null } = payload || {}
-
-  console.log(selected)
-  console.log(timeRange)
   if (!selected.length || !timeRange) {
     console.log('No sensors or timeRange provided')
     return
   }
 
-
   try {
-    const resp = await $fetch('/api/sensor-detail', {
-      method: 'POST',
-      body: {
-        sensors: selected.map(s => ({ table: s.table, id: s.idsensore })),
-        start: timeRange.startISO,
-        end: timeRange.endISO
+    // 1) remove duplicate     use set avoid .value() compatibility problem
+    const seen = new Set()
+    const uniqueSelected = []
+    for (const s of selected) {
+      const typeKey = (s.data_type && String(s.data_type)) || (s.table && String(s.table)) || 'unknown'
+      const idKey = s.idsensore ?? ''
+      const key = `${typeKey}::${idKey}`
+      if (!seen.has(key)) {
+        seen.add(key)
+        uniqueSelected.push(s)
       }
+    }
+    // 2) classify the data into different group
+    const grouped = uniqueSelected.reduce((acc, s) => {
+      const type = (s.data_type && String(s.data_type)) || (s.table && String(s.table)) || 'unknown'
+      if (!acc[type]) acc[type] = []
+      acc[type].push({
+        id: (s.table).slice(0, -6)+s.idsensore,   // set the id as the sensor id in the pgsql table
+      })
+      return acc
+    }, {})
+
+    // 3) finally payload（type + timerange）
+    const payloadBody = {
+      groups: grouped,
+      start: timeRange.startISO,
+      end: timeRange.endISO
+    }
+    console.log(payloadBody)
+
+    const resp = await $fetch('/api/query-sensor-detail', {
+      method: 'POST',
+      body: payloadBody
     })
     console.log('Selected sensors detail:', resp)
   } catch (e) {
@@ -373,8 +395,8 @@ html, body, #__nuxt, #app {
   padding: 0;
 }
 .ol-zoom {
-  left: auto;     /* 取消默认的 left */
-  right: 12px;    /* 靠右 */
-  top: 12px;      /* 靠上 */
+  left: auto;
+  right: 12px;
+  top: 12px;
 }
 </style>
