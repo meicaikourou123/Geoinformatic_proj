@@ -22,7 +22,7 @@ const client = new Client({
 });
 
 
-const datasetDir = '/Users/sunzheng/Downloads/01datasets/PP_tot_10min';
+const datasetDir = '/Users/sunzheng/Downloads/01datasets/VV_tot';
 async function insertBatch(rows) {
     if (rows.length === 0) return;
 
@@ -33,14 +33,14 @@ async function insertBatch(rows) {
     const flatValues = rows.flat();
 
     await client.query(
-        `INSERT INTO pp_tot_10 (pp_id, date_time, data) VALUES ${valuesClause}`,
+        `INSERT INTO vv_tot (vv_id, date_time, data) VALUES ${valuesClause}`,
         flatValues
     );
 }
 
 async function importFileToDB(filePath) {
     const basename = path.basename(filePath);
-    const filenameWithoutExt = path.parse(basename).name;
+    const filenameWithoutExt = path.parse(basename).name.slice(0, -7);
 
     const content = fs.readFileSync(filePath, 'utf-8');
     const lines = content.split(/\r?\n/).filter(Boolean);
@@ -50,24 +50,21 @@ async function importFileToDB(filePath) {
     let skipped = 0;
 
     for (const line of dataLines) {
-        const parts = line.split(','); // change to '\t' or ' ' if needed
+        const parts = line.split(','); // 确认分隔符是不是 ','
 
-        // 检查字段个数 和 非空要求
         if (parts.length < 2 || parts[1].trim() === '') {
-            // console.warn(`⚠️ 跳过无效行: ${line}`);   无效行直接跳过了，没有添加
             skipped++;
             continue;
         }
 
-        const col1 = parts[0].trim();
-        const col2 = parts[1].trim();
-        const col3 = parts[2]?.trim() || null;
+        const date_time = parts[0].trim();  // 第一列：时间
+        const data = parts[1].trim();       // 第二列：数值
 
-        batch.push([filenameWithoutExt, col1, col3]);
+        // 插入三列：文件名 + 时间 + 数据
+        batch.push([filenameWithoutExt, date_time, data]);
 
         if (batch.length === BATCH_SIZE) {
             await insertBatch(batch);
-            // console.log(`✔ 插入批次 ${BATCH_SIZE} 行`);
             batch = [];
         }
     }

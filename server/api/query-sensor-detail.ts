@@ -46,11 +46,10 @@ export default defineEventHandler(async (event) => {
                 data: res.rows
             })
         }
+        results[groupType] = results[groupType].filter(item => item.data.length > 0)
     }
 
     await client.end()
-
-    console.log(results)
     return {
         success: true,
         data: results

@@ -105,6 +105,7 @@ const onCheckboxChange = (newKeys) => {
 
   // Handle deselected items
   const unselected = queryResult.value.filter(row => !newKeys.includes(row.stormcode))
+
   unselected.forEach(row => {
     emit('drawTrajectory', {
       code: row.stormcode,
@@ -113,6 +114,7 @@ const onCheckboxChange = (newKeys) => {
       checked: false
     })
   })
+  // console.log("execut here!")
 }
 
 const queryData = async () => {

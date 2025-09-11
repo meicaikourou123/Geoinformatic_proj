@@ -136,7 +136,6 @@
           </n-tooltip>
         </n-space>
       </client-only>
-
     </div>
   </div>
 </template>
@@ -157,6 +156,9 @@ import { ref, computed, watch } from 'vue'
 import { useDraggable } from '@/composables/useDraggable'
 import { NSwitch, NSpace, NTimePicker, NButton, NSlider, NGrid, NGi, NTooltip, NCheckbox } from 'naive-ui'
 import { toPgTimestamp } from '~/utils/formats'
+import SensorChart from '@/components/SensorChart.vue'
+const showChart = ref(false)
+
 
 const popup = ref(null)
 const popupContent = ref(null)

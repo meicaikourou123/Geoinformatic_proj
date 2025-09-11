@@ -3,14 +3,15 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { Client } from 'pg';
 
-// ===== 路径修正，模拟 __dirname（ESM 中没有） =====
+
+//  importBatchData.js is faster, please use importBatchData
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// ===== 数据文件目录 =====
+// =
 const datasetDir = '/Users/sunzheng/Downloads/01datasets/PA_tot';
 
-// ===== PostgreSQL 配置 =====
+// ===== PostgreSQL  =====
 const client = new Client({
     user: 'postgres',
     host: 'localhost',
@@ -22,7 +23,7 @@ const client = new Client({
 // ===== 导入单个文件 =====
 async function importFileToDB(filePath) {
     const basename = path.basename(filePath);               // e.g. data_123.txt
-    const filenameWithoutExt = path.parse(basename).name;   // e.g. data_123
+    const filenameWithoutExt = path.parse(basename).name.slice(0, -7);   // e.g. data_123
 
     const content = fs.readFileSync(filePath, 'utf-8');
     const lines = content.split(/\r?\n/).filter(Boolean);   // 去除空行
@@ -42,7 +43,7 @@ async function importFileToDB(filePath) {
         console.log(filenameWithoutExt,col1,col2)
 
         await client.query(
-            'INSERT INTO pa_tot (pa_id, time, data) VALUES ($1, $2, $3)',
+            'INSERT INTO pa_tot (pa_id, date_time, data) VALUES ($1, $2, $3)',
             [filenameWithoutExt, col1, col2]
         );
 

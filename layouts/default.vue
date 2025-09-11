@@ -17,7 +17,9 @@
       @querySelectedSensors="onQuerySelectedSensors"
       @close="handleClosePanel"
     />
+    <SensorChart  v-if="showChart" :show="showChart" @closeChart="showChart = false" :data="sensorChartData" />
   </div>
+
 </template>
 
 <script setup>
@@ -36,10 +38,15 @@ import { Stroke, Style, Fill, Circle as CircleStyle } from 'ol/style'
 import Point from 'ol/geom/Point'
 import TrackInfoPanel from '@/components/TrackInfoPanel.vue'
 import { circular } from 'ol/geom/Polygon'
+import { useRouter } from '#app'
+import SensorChart from '@/components/SensorChart.vue'
 
+const router = useRouter()
+const sensorChartData = useState('sensorChartData', () => null)
 const selectedPoint = ref(null)
 const bufferSensors = ref([])
 const panelRef = ref(null)
+const showChart = ref(false)
 
 let map
 let vectorSource
@@ -86,9 +93,12 @@ onMounted(() => {
 })
 
 function onDrawTrajectory({ code, points, checked }) {
-  if (!code || !Array.isArray(points) || points.length === 0) return;
+
+  if (!code) return;
 
   if (checked) {
+    if (!Array.isArray(points) || points.length === 0) return;
+
     const projectedCoords = points.map(p => fromLonLat([p.lon, p.lat]));
     const line = new LineString(projectedCoords);
 
@@ -374,13 +384,14 @@ async function onQuerySelectedSensors (payload) {
       start: timeRange.startISO,
       end: timeRange.endISO
     }
-    console.log(payloadBody)
 
     const resp = await $fetch('/api/query-sensor-detail', {
       method: 'POST',
       body: payloadBody
     })
     console.log('Selected sensors detail:', resp)
+    sensorChartData.value = resp   // resp 必须是 { pressure: [...], rain: [...], ... }
+    showChart.value = true
   } catch (e) {
     console.error('Fetch sensor detail failed:', e)
   }

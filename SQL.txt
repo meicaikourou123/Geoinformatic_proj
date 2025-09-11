@@ -56,3 +56,12 @@ CREATE TABLE winv_sensor (
 );
 
 CREATE INDEX idx_winv_sensor_geom ON winv_sensor USING GIST (geom);
+
+//Here add the data_type for the sensor
+ALTER TABLE winv_sensor
+    ADD COLUMN IF NOT EXISTS data_type text;
+
+UPDATE pres_sensor
+SET data_type = 'pres'
+
+
