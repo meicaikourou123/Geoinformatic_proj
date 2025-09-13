@@ -17,9 +17,7 @@
       @querySelectedSensors="onQuerySelectedSensors"
       @close="handleClosePanel"
     />
-    <SensorChart  v-if="showChart1" :show="showChart1" :chartId="1" @closeChart="(id) => { if(id === 1) showChart1 = false }" :data="sensorChartData" />
-    <SensorChart  v-if="showChart2" :show="showChart2" :chartId="2" @closeChart="(id) => { if(id === 2) showChart2 = false }" :data="sensorChartData" />
-    <SensorChart  v-if="showChart3" :show="showChart3" :chartId="3" @closeChart="(id) => { if(id === 3) showChart3 = false }" :data="sensorChartData" />
+    <SensorChart  v-if="showChart" :show="showChart" @closeChart="showChart = false" :data="sensorChartData" />
   </div>
 
 </template>
@@ -50,11 +48,9 @@ const sensorChartData = useState('sensorChartData', () => null)
 const selectedPoint = ref(null)
 const bufferSensors = ref([])
 const panelRef = ref(null)
-// const showChart = ref(false)
 
-const showChart1 = ref(false)
-const showChart2 = ref(false)
-const showChart3 = ref(false)
+const showChart = ref(false)
+
 
 let map
 let vectorSource
@@ -401,11 +397,8 @@ async function onQuerySelectedSensors (payload) {
     })
     // console.log('Selected sensors detail:', resp)
     sensorChartData.value = resp   // resp 必须是 { pressure: [...], rain: [...], ... }
-    // showChart.value = true   // show on the chart, but here should 3 charts
-
-    showChart1.value = true
-    showChart2.value = true
-    showChart3.value = true
+    showChart.value = true
+    console.log('test')
   } catch (e) {
     console.error('Fetch sensor detail failed:', e)
   }
