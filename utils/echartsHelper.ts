@@ -21,7 +21,7 @@ export function buildEchartOption(results: Record<string, any[]>) {
                     name,
                     type: 'line',
                     showSymbol: false,
-                    data: data   // ← 这里需要冒号
+                    data: data
             }
             // const name = `${groupType}_${sensor.id}`
            if(groupType=='rain'||groupType=='winv'){
@@ -46,7 +46,6 @@ export function buildEchartOption(results: Record<string, any[]>) {
 
         }
     }
-console.log(series1,series2,series3)
     return {
         chartData1: {
             tooltip: { trigger: 'axis' },
@@ -66,14 +65,17 @@ console.log(series1,series2,series3)
             tooltip: { trigger: 'axis' },
             legend: { data: legends3 },
             xAxis: { type: 'time' },
-            yAxis: { type: 'value' },
+            yAxis: { type: 'value',
+                scale:true},
             series: series3
         },
         chartData4: {
             tooltip: { trigger: 'axis' },
             legend: { data: legends4 },
             xAxis: { type: 'time' },
-            yAxis: { type: 'value' },
+            yAxis: { type: 'value',
+            scale:true
+            },
             series: series4
         },
         chartData5: {

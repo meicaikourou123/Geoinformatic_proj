@@ -1,11 +1,12 @@
 <template>
   <div v-if="show" class="chartPanel" ref="chartPanel">
     <div class="header" @mousedown="startDrag">
+      <span style="font-weight: bold">{{ pageTitle }}</span>
       <button class="close-btn" @click="emit('closeChart')">×</button>
     </div>
     <client-only>
       <div v-if="!currentOption || !currentOption.series || currentOption.series.length === 0" class="empty">
-        No chart data.
+        No Sensor Data for chart display.
       </div>
       <div v-else class="chart-box">
         <v-chart class="chart" :option="currentOption" autoresize />
@@ -50,10 +51,26 @@ const currentOption = computed(() => {
   if (currentPage.value === 5) return option.value.chartData5
   return null
 })
+const pageTitle = computed(() => {
+  switch (currentPage.value) {
+    case 1:
+      return "Rain & Wind velocity";
+    case 2:
+      return " Relative humidity";
+    case 3:
+      return "Temperature";
+    case 4:
+      return "Pressure";
+    case 5:
+      return "Wind Direction";
+    default:
+      return "Sensor Chart";
+  }
+})
 
 watchEffect(() => {
   if (chartData.value && Object.keys(chartData.value).length > 0) {
-    console.log(chartData)
+    // console.log(chartData)
     option.value = buildEchartOption(chartData.value)
   }
 })
@@ -97,7 +114,7 @@ watchEffect(() => {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
 }
 
 .close-btn {
