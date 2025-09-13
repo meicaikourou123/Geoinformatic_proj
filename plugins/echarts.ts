@@ -27,5 +27,5 @@ export default defineNuxtPlugin(() => {
         TitleComponent
     ])
 
-    console.log('✅ ECharts plugin registered')
+    // console.log('✅ ECharts plugin registered')
 })

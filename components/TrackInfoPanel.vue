@@ -40,7 +40,7 @@
       <client-only>
         <n-tooltip trigger="hover">
           <template #trigger>
-            <n-switch v-model:value="active" @click.stop @mousedown.stop>
+            <n-switch v-model:value="active" size="small" @click.stop @mousedown.stop>
               <template #checked>
                 On
               </template>
@@ -255,8 +255,6 @@ watch(
       if (!isNaN(center.getTime())) {
         startTime.value = center.getTime() - 60 * 60 * 1000
         endTime.value = center.getTime() + 60 * 60 * 1000
-
-
       }
     }
   },
