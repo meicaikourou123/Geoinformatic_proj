@@ -1,15 +1,19 @@
 <template>
   <div v-if="show" class="chartPanel" ref="chartPanel">
     <div class="header" @mousedown="startDrag">
-      <h3>Sensor Chart</h3>
       <button class="close-btn" @click="emit('closeChart')">×</button>
     </div>
     <client-only>
-      <div v-if="!option?.chartData1 || !option.chartData1.series || option.chartData1.series.length === 0" class="empty">
-        No chart data. Please run a query from Track Info Panel.
+      <div v-if="!currentOption || !currentOption.series || currentOption.series.length === 0" class="empty">
+        No chart data.
       </div>
       <div v-else class="chart-box">
-        <v-chart class="chart" :option="option.chartData1" autoresize />
+        <v-chart class="chart" :option="currentOption" autoresize />
+      </div>
+      <div class="pager">
+        <button @click="currentPage > 1 && (currentPage--)" :disabled="currentPage === 1">Pre</button>
+        <span>{{ currentPage }}</span>
+        <button @click="currentPage < 5 && (currentPage++)" :disabled="currentPage === 5">Next</button>
       </div>
     </client-only>
   </div>
@@ -18,7 +22,7 @@
 <script setup>
 defineOptions({ ssr: false })
 
-import { ref, watchEffect, defineAsyncComponent } from 'vue'
+import { ref, watchEffect, defineAsyncComponent, computed } from 'vue'
 import { useDraggable } from '@/composables/useDraggable'
 import { buildEchartOption } from '~/utils/echartsHelper'
 
@@ -35,6 +39,18 @@ const emit = defineEmits([ 'closeChart'])
 const option = ref({})
 const chartData = useState('sensorChartData', () => null)
 
+const currentPage = ref(1)
+
+const currentOption = computed(() => {
+  if (!option.value) return null
+  if (currentPage.value === 1) return option.value.chartData1
+  if (currentPage.value === 2) return option.value.chartData2
+  if (currentPage.value === 3) return option.value.chartData3
+  if (currentPage.value === 4) return option.value.chartData4
+  if (currentPage.value === 5) return option.value.chartData5
+  return null
+})
+
 watchEffect(() => {
   if (chartData.value && Object.keys(chartData.value).length > 0) {
     console.log(chartData)
@@ -50,7 +66,7 @@ watchEffect(() => {
   border-radius: 10px;
   border: 1px solid #ccc;
   width: 500px;
-  height: 400px;
+  height: 350px;
   font-size: 12px;
   position: fixed;
   top: 200px;
@@ -69,7 +85,7 @@ watchEffect(() => {
 
 .chart-box {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 40px);
 }
 
 .chart {
@@ -81,7 +97,7 @@ watchEffect(() => {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
 }
 
 .close-btn {
@@ -93,5 +109,18 @@ watchEffect(() => {
   padding: 0;
   margin: 0;
   color: #333;
+}
+
+.pager {
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
 }
 </style>

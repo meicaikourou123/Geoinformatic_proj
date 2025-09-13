@@ -6,9 +6,13 @@ export function buildEchartOption(results: Record<string, any[]>) {
     const series1: any[] = []
     const series2: any[] = []
     const series3: any[] = []
+    const series4: any[] = []
+    const series5: any[] = []
     const legends1: string[] = []
     const legends2: string[] = []
     const legends3: string[] = []
+    const legends4: string[] = []
+    const legends5: string[] = []
     for (const [groupType, sensors] of Object.entries(results.data)) {
         for (const sensor of sensors) {
             const name = `${sensor.id}`
@@ -23,12 +27,20 @@ export function buildEchartOption(results: Record<string, any[]>) {
            if(groupType=='rain'||groupType=='winv'){
                 legends1.push(name)
                 series1.push(seriesItem)
-            }else if(groupType=='relh'||groupType=='temp'||groupType=='pres'){
+            }else if(groupType=='relh'){
                legends2.push(name)
                series2.push(seriesItem)
-           }else if(groupType=='wind'){
+           }else if(groupType=='temp'){
                legends3.push(name)
                series3.push(seriesItem)
+           }
+           else if(groupType=='pres'){
+               legends4.push(name)
+               series4.push(seriesItem)
+           }
+           else if(groupType=='wind'){
+               legends5.push(name)
+               series5.push(seriesItem)
            }
 
 
@@ -56,6 +68,20 @@ console.log(series1,series2,series3)
             xAxis: { type: 'time' },
             yAxis: { type: 'value' },
             series: series3
+        },
+        chartData4: {
+            tooltip: { trigger: 'axis' },
+            legend: { data: legends4 },
+            xAxis: { type: 'time' },
+            yAxis: { type: 'value' },
+            series: series4
+        },
+        chartData5: {
+            tooltip: { trigger: 'axis' },
+            legend: { data: legends5 },
+            xAxis: { type: 'time' },
+            yAxis: { type: 'value' },
+            series: series5
         }
     }
 }
