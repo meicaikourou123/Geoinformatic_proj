@@ -6,13 +6,15 @@ import { use } from 'echarts/core'
 import { CanvasRenderer } from 'echarts/renderers'
 
 // 引入常用图表
-import { LineChart, BarChart } from 'echarts/charts'
+import { LineChart, BarChart,ScatterChart,  } from 'echarts/charts'
 
 // 引入组件
 import {
     GridComponent,
     TooltipComponent,
     LegendComponent,
+    PolarComponent,
+
     TitleComponent
 } from 'echarts/components'
 
@@ -24,6 +26,8 @@ export default defineNuxtPlugin(() => {
         GridComponent,
         TooltipComponent,
         LegendComponent,
+        PolarComponent,
+        ScatterChart,
         TitleComponent
     ])
 

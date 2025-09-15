@@ -8,11 +8,14 @@ export function buildEchartOption(results: Record<string, any[]>) {
     const series3: any[] = []
     const series4: any[] = []
     const series5: any[] = []
+    const series6: any[] = []
     const legends1: string[] = []
     const legends2: string[] = []
     const legends3: string[] = []
     const legends4: string[] = []
     const legends5: string[] = []
+    const legends6: string[] = []
+
     for (const [groupType, sensors] of Object.entries(results.data)) {
         for (const sensor of sensors) {
             const name = `${sensor.id}`
@@ -23,8 +26,9 @@ export function buildEchartOption(results: Record<string, any[]>) {
                     showSymbol: false,
                     data: data
             }
+
             // const name = `${groupType}_${sensor.id}`
-           if(groupType=='rain'||groupType=='winv'){
+           if(groupType=='rain'){
                 legends1.push(name)
                 series1.push(seriesItem)
             }else if(groupType=='relh'){
@@ -37,18 +41,33 @@ export function buildEchartOption(results: Record<string, any[]>) {
            else if(groupType=='pres'){
                legends4.push(name)
                series4.push(seriesItem)
-           }
-           else if(groupType=='wind'){
+           }else if(groupType=='winv'){
                legends5.push(name)
                series5.push(seriesItem)
            }
-
-
+           else if(groupType=='wind'){
+               seriesItem.type='scatter'
+               legends6.push(name)
+               series6.push(seriesItem)
+           }
         }
     }
+    const timeSet = new Set<string>()
+    for (const s of series6) {
+        for (const d of s.data) {
+            if (d && d[0]) {
+                timeSet.add(d[0])
+            }
+        }
+    }
+    const timeIndex = Array.from(timeSet).sort()
     return {
         chartData1: {
             tooltip: { trigger: 'axis' },
+            grid: {
+                top: '20%',
+                bottom: '10%'
+            },
             legend: { data: legends1 },
             xAxis: { type: 'time' },
             yAxis: { type: 'value' },
@@ -56,21 +75,51 @@ export function buildEchartOption(results: Record<string, any[]>) {
         },
         chartData2: {
             tooltip: { trigger: 'axis' },
+            grid: {
+                top: '20%',
+                bottom: '10%'
+            },
             legend: { data: legends2 },
             xAxis: { type: 'time' },
             yAxis: { type: 'value' },
             series: series2
         },
         chartData3: {
-            tooltip: { trigger: 'axis' },
-            legend: { data: legends3 },
+            tooltip: {
+                trigger: 'axis',
+                position: function (point) {
+                    return [point[0], point[1]-50];
+                }
+            },
+            grid: {
+                    top: '25%',
+                    bottom: '10%'
+            },
+            legend: {
+                data: legends3,
+                type: 'scroll', // 默认为 'plain'，可以省略
+                orient: 'horizontal',
+                top: 5,
+                bottom: 20,
+                itemWidth: 14,
+                itemHeight: 14,
+                itemGap: 12,
+                // 设置最大宽度/行数通过容器控制
+                width: '90%',
+            },
             xAxis: { type: 'time' },
-            yAxis: { type: 'value',
-                scale:true},
+            yAxis: {
+                type: 'value',
+                scale: true
+            },
             series: series3
         },
         chartData4: {
             tooltip: { trigger: 'axis' },
+            grid: {
+                top: '20%',
+                bottom: '10%'
+            },
             legend: { data: legends4 },
             xAxis: { type: 'time' },
             yAxis: { type: 'value',
@@ -80,10 +129,72 @@ export function buildEchartOption(results: Record<string, any[]>) {
         },
         chartData5: {
             tooltip: { trigger: 'axis' },
+            grid: {
+                top: '20%',
+                bottom: '10%'
+            },
             legend: { data: legends5 },
             xAxis: { type: 'time' },
             yAxis: { type: 'value' },
             series: series5
+        },
+
+        chartData6: {
+            tooltip: {
+                trigger: 'item',
+                formatter: (params: any) => `
+      Time: ${params.value[2]}<br/>
+      Direction: ${params.value[1]}°
+    `
+            },
+
+            legend: {
+                data: legends6,
+                left: 'left',
+                orient: 'vertical',
+                itemWidth: 15,
+                itemHeight: 15,
+                itemGap: 12,
+
+            },
+            grid: {
+                top: '20%',
+                bottom: '10%',
+                right:'10%'
+            },
+            polar: {},
+            angleAxis: {
+                type: 'value',
+                min: 0,
+                max: 360,
+                boundaryGap: false,
+                splitLine: { show: true },
+                axisLine: { show: false }
+            },
+            radiusAxis: {
+                type: 'category',
+                data: timeIndex,
+                axisLabel: { show: false },
+                axisTick: { show: true },
+                splitNumber: 12
+            },
+            series: series6.map(s => ({
+                name: s.name,
+                type: 'scatter',
+                coordinateSystem: 'polar',
+                symbolSize: 8,
+                data: s.data
+                    .map((d: any) => {
+                        const windDir = Number(d[1])
+                        const timeStr = d[0]
+                        if (isNaN(windDir)) return null
+                        const radiusIndex = timeIndex.indexOf(timeStr)
+                        if (radiusIndex === -1) return null
+                        // [风向, 时间索引, 时间字符串]
+                        return [ radiusIndex,windDir, timeStr]
+                    })
+                    .filter(Boolean)
+            }))
         }
     }
 }
