@@ -97,14 +97,13 @@ export function buildEchartOption(results: Record<string, any[]>) {
             },
             legend: {
                 data: legends3,
-                type: 'scroll', // 默认为 'plain'，可以省略
+                type: 'scroll', //can ensure scroll
                 orient: 'horizontal',
                 top: 5,
                 bottom: 20,
                 itemWidth: 14,
                 itemHeight: 14,
                 itemGap: 12,
-                // 设置最大宽度/行数通过容器控制
                 width: '90%',
             },
             xAxis: { type: 'time' },
@@ -190,7 +189,7 @@ export function buildEchartOption(results: Record<string, any[]>) {
                         if (isNaN(windDir)) return null
                         const radiusIndex = timeIndex.indexOf(timeStr)
                         if (radiusIndex === -1) return null
-                        // [风向, 时间索引, 时间字符串]
+                        // [time_index, wind_direction, timestr]
                         return [ radiusIndex,windDir, timeStr]
                     })
                     .filter(Boolean)
