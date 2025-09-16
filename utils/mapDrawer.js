@@ -1,12 +1,10 @@
 import { Feature } from 'ol';
 import { LineString, Point } from 'ol/geom';
-import { Vector as VectorLayer } from 'ol/layer';
-import { Vector as VectorSource } from 'ol/source';
 import { Style, Stroke, Circle, Fill } from 'ol/style';
 import { fromLonLat } from 'ol/proj';
 
 /**
- * 绘制轨迹和轨迹点
+ * draw trajectory abd point
  */
 export function drawTrajectory({ code, points, vectorSource }) {
     const lineCoords = points.map(p => fromLonLat([p.lon, p.lat]));
@@ -45,12 +43,4 @@ export function drawTrajectory({ code, points, vectorSource }) {
 
         vectorSource.addFeature(pointFeature);
     });
-}
-
-/**
- * 移除轨迹及其所有点
- */
-export function removeTrajectory(code, vectorSource) {
-    const toRemove = vectorSource.getFeatures().filter(f => f.get('code') === code);
-    toRemove.forEach(f => vectorSource.removeFeature(f));
 }

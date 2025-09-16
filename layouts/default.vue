@@ -396,7 +396,7 @@ async function onQuerySelectedSensors (payload) {
       body: payloadBody
     })
     // console.log('Selected sensors detail:', resp)
-    sensorChartData.value = resp   // resp 必须是 { pressure: [...], rain: [...], ... }
+    sensorChartData.value = resp   // resp must be{ pressure: [...], rain: [...], ... }
     showChart.value = true
   } catch (e) {
     console.error('Fetch sensor detail failed:', e)

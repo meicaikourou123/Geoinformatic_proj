@@ -8,7 +8,7 @@ export function formatTimestamp(ts: number | string | Date): string {
 // server/utils/format.ts
 
 /**
- * 格式化时间为 'YYYY-MM-DD HH:mm:ss'
+ * formated time is 'YYYY-MM-DD HH:mm:ss'
  */
 export function formatDateTime(date: Date | string): string {
     const d = new Date(date)

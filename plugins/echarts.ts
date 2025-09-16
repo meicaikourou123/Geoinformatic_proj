@@ -2,13 +2,13 @@
 import { defineNuxtPlugin } from '#app'
 import { use } from 'echarts/core'
 
-// 引入渲染器
+// import the render
 import { CanvasRenderer } from 'echarts/renderers'
 
-// 引入常用图表
+// import the chart we need
 import { LineChart, BarChart,ScatterChart,  } from 'echarts/charts'
 
-// 引入组件
+// import component
 import {
     GridComponent,
     TooltipComponent,
@@ -20,7 +20,7 @@ import {
 
 export default defineNuxtPlugin(() => {
     use([
-        CanvasRenderer, // ✅ 渲染器
+        CanvasRenderer, // ✅ render
         LineChart,
         BarChart,
         GridComponent,

@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
         ...row,
         start_time: formatDateTime(row.start_time),
         end_time: formatDateTime(row.end_time),
-        // points 字段已直接包含所有点 [{lon,lat},...]
+        // points include all the attributes [{lon,lat},...]
     }))
     return formattedRows
 })
