@@ -10,12 +10,12 @@ export default defineEventHandler(async (event) => {
     await client.connect()
 
     const tableNames = [
-        'pres_sensor',
-        'temp_sensor',
-        'wind_sensor',
-        'winv_sensor',
+        'rain_sensor',
         'relh_sensor',
-        'rain_sensor'
+        'temp_sensor',
+        'pres_sensor',
+        'winv_sensor',
+        'wind_sensor'
     ]
 
     const results = {}

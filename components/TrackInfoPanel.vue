@@ -103,20 +103,23 @@
 
           </div>
           <div class="sensor-scroll">
-            <div
-              v-for="(s, i) in sensors"
-              :key="(s.idsensore || i) + '-' + (s.table || '')"
-              class="sensor-row"
-            >
-              <div class="sensor-row-main" @click="emit('selectSensor', s)">
-                <div class="sensor-name">ID: {{ s.idsensore || '—' }} · {{ s.data_type || '—' }}--{{ s.nomestazione || s.nome_tipologia || s.idsensore }} </div>
+            <div v-for="(group, type) in groupedSensors" :key="type" :style="{ backgroundColor: getColorForType(type), padding: '4px 6px', marginBottom: '8px', borderRadius: '4px' }">
+              <div class="sensor-group-title" style="font-weight: bold; margin-bottom: 4px;">{{ type }}</div>
+              <div
+                v-for="(s, i) in group"
+                :key="(s.idsensore || i) + '-' + (s.table || '')"
+                class="sensor-row"
+              >
+                <div class="sensor-row-main" @click="emit('selectSensor', s)">
+                  <div class="sensor-name">ID: {{ s.idsensore || '—' }} · {{ s.data_type || '—' }}--{{ s.nomestazione || s.nome_tipologia || s.idsensore }} </div>
+                </div>
+                <n-checkbox
+                  :checked="checkedMap[getKey(s, i)] ?? true"
+                  @update:checked="onToggleSensor(s, i, $event)"
+                  @mousedown.stop
+                  @click.stop
+                />
               </div>
-              <n-checkbox
-                :checked="checkedMap[getKey(s, i)] ?? true"
-                @update:checked="onToggleSensor(s, i, $event)"
-                @mousedown.stop
-                @click.stop
-              />
             </div>
           </div>
         </div>
@@ -266,6 +269,28 @@ watch(bufferDistanceInMeters, (newVal) => {
   emit('drawBufferCircle', { distance: newVal * 1000, center: popupCenter.value })
 })
 
+const groupedSensors = computed(() => {
+  const groups = {}
+  for (const sensor of props.sensors || []) {
+    const key = sensor.data_type || 'Unknown'
+    if (!groups[key]) groups[key] = []
+    groups[key].push(sensor)
+  }
+  return groups
+})
+
+function getColorForType(type) {
+  const colorMap = {
+    temp: '#6D94C5',
+    humidity: '#f0fff4',
+    rain: '#8ABB6C',
+    pres: '#FAA533',
+    winv: '#1C6EA4',
+    wind: '#A8BBA3',
+    Unknown: '#f8fafc'
+  }
+  return colorMap[type] || '#f5f5f5'
+}
 
 function updateTimeRange(centerTime) {
   const center = new Date(centerTime)

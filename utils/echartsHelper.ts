@@ -1,8 +1,11 @@
 export function buildEchartOption(results: Record<string, any[]>) {
     // because we need to display the data on 3 charts, we need to divide the data
-    // 1 rain & wind-velocity  [0-50]
-    // 2 humidity[0-100] & temperature[0-50] & pressure[]
-    // 3 wind-direction[0-360] degree
+    // 1 rain
+    // 2 humidity[0-100]
+    // 3 temperature[0-50]
+    // 4 pressure[]
+    // 5 wind-velocity  [0-50]
+    // 6 wind-direction[0-360] degree
     const series1: any[] = []
     const series2: any[] = []
     const series3: any[] = []
