@@ -102,9 +102,14 @@
 
 
           </div>
-          <div class="sensor-scroll">
+          <div class="sensor-scroll" ref="sensorScrollRef">
             <div v-for="(group, type) in groupedSensors" :key="type" :style="{ backgroundColor: getColorForType(type), padding: '4px 6px', marginBottom: '8px', borderRadius: '4px' }">
-              <div class="sensor-group-title" style="font-weight: bold; margin-bottom: 4px;">{{ type }}</div>
+              <div
+                class="sensor-group-title"
+                style="font-weight: bold; margin-bottom: 4px; height: 0; overflow: hidden; visibility: hidden;"
+              >
+                {{ type }}
+              </div>
               <div
                 v-for="(s, i) in group"
                 :key="(s.idsensore || i) + '-' + (s.table || '')"
@@ -282,7 +287,7 @@ const groupedSensors = computed(() => {
 function getColorForType(type) {
   const colorMap = {
     temp: '#6D94C5',
-    humidity: '#f0fff4',
+    relh: '#f0fff4',
     rain: '#8ABB6C',
     pres: '#FAA533',
     winv: '#1C6EA4',
@@ -327,6 +332,18 @@ function handleQuerySelectedSensors () {
   })
 }
 
+const sensorScrollRef = ref(null)
+
+function scrollToSensorGroup(key) {
+  const groupEls = sensorScrollRef.value?.querySelectorAll('.sensor-group-title')
+  for (const el of groupEls) {
+    if (el.textContent.trim().toLowerCase().includes(key)) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      break
+    }
+  }
+}
+
 defineExpose({
   getElement: () => popup.value,
   setData: (html, pointData) => {
@@ -335,7 +352,8 @@ defineExpose({
   },
   updateTimeRange,
   checkedValue,
-  getSelectedSensors: () => selectedSensors.value
+  getSelectedSensors: () => selectedSensors.value,
+  scrollToSensorGroup
 })
 </script>
 

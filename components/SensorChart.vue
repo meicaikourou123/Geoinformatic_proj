@@ -12,9 +12,9 @@
         <v-chart class="chart" :option="currentOption" autoresize />
       </div>
       <div class="pager">
-        <button @click="currentPage > 1 && (currentPage--)" :disabled="currentPage === 1">Pre</button>
+        <button @click="goPrevPage" :disabled="currentPage === 1">Pre</button>
         <span>{{ currentPage }}</span>
-        <button @click="currentPage < 6 && (currentPage++)" :disabled="currentPage === 6">Next</button>
+        <button @click="goNextPage" :disabled="currentPage === 6">Next</button>
       </div>
     </client-only>
   </div>
@@ -35,12 +35,12 @@ const { startDrag } = useDraggable(chartPanel)
 const props = defineProps({
   show: Boolean
 })
-const emit = defineEmits([ 'closeChart'])
+const emit = defineEmits([ 'closeChart', 'pageChange' ])
 
 const option = ref({})
 const chartData = useState('sensorChartData', () => null)
 
-const currentPage = ref(3)
+const currentPage = ref(1)
 
 const currentOption = computed(() => {
   if (!option.value) return null
@@ -71,6 +71,19 @@ const pageTitle = computed(() => {
       return "Sensor Chart";
   }
 })
+
+function goPrevPage() {
+  if (currentPage.value > 1) {
+    currentPage.value--
+    emit('pageChange', currentPage.value)
+  }
+}
+function goNextPage() {
+  if (currentPage.value < 6) {
+    currentPage.value++
+    emit('pageChange', currentPage.value)
+  }
+}
 
 watchEffect(() => {
   if (chartData.value && Object.keys(chartData.value).length > 0) {

@@ -17,7 +17,7 @@
       @querySelectedSensors="onQuerySelectedSensors"
       @close="handleClosePanel"
     />
-    <SensorChart  v-if="showChart" :show="showChart" @closeChart="showChart = false" :data="sensorChartData" />
+    <SensorChart  v-if="showChart" :show="showChart" @closeChart="showChart = false" :data="sensorChartData" @pageChange="scrollToSensorGroupByPage" />
   </div>
 
 </template>
@@ -254,7 +254,7 @@ async function handleQuerySensors({ center, distance }) {
             new Style({
               image: new CircleStyle({
                 radius: 5,
-                fill: new Fill({ color: 'orange' }),
+                fill: new Fill({ color: 'white' }),    // here is the style of the sensors
                 stroke: new Stroke({ color: 'black', width: 1 })
               })
             })
@@ -401,6 +401,22 @@ async function onQuerySelectedSensors (payload) {
   } catch (e) {
     console.error('Fetch sensor detail failed:', e)
   }
+}
+
+function scrollToSensorGroupByPage(page) {
+  const panel = panelRef.value
+  if (!panel || typeof panel.scrollToSensorGroup !== 'function') return
+
+  const map = {
+    1: 'rain',
+    2: 'relh',
+    3: 'temp',
+    4: 'pres',
+    5: 'winv',
+    6: 'wind'
+  }
+  const key = map[page]
+  if (key) panel.scrollToSensorGroup(key)
 }
 </script>
 
