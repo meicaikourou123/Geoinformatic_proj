@@ -5,7 +5,7 @@
       <client-only>
         <n-tooltip trigger="hover">
           <template #trigger>
-            <button class="tip-close" @click="emit('close')" aria-label="Close">×</button>
+            <button class="tip-close" @click="handleClose" aria-label="Close">×</button>
           </template>
           Close this Panel
         </n-tooltip>
@@ -40,7 +40,7 @@
       <client-only>
         <n-tooltip trigger="hover">
           <template #trigger>
-            <n-switch v-model:value="active" size="small" @click.stop @mousedown.stop>
+            <n-switch v-model:value="active" size="small" @click.stop @mousedown.stop @update:value="onToggleDisplayBuffer">
               <template #checked>
                 On
               </template>
@@ -305,9 +305,6 @@ function updateTimeRange(centerTime) {
 
 }
 
-function disableNonNearbyTimes(ts) {
-  return (startTime.value != null && ts < startTime.value) || (endTime.value != null && ts > endTime.value)
-}
 
 function handleSearch() {
   if (!popupCenter.value || !bufferDistanceInMeters.value) return
@@ -323,6 +320,16 @@ function onRadiusChange(val) {
   bufferDistanceInMeters.value = km
   if (!popupCenter.value) return
   emit('drawBufferCircle', { distance: km * 1000, center: popupCenter.value })
+}
+
+function onToggleDisplayBuffer(val) {   //Here I want to display the buffer once switch is on
+  active.value = val
+  if (val && popupCenter.value && bufferDistanceInMeters.value) {
+    emit('drawBufferCircle', {
+      center: popupCenter.value,
+      distance: bufferDistanceInMeters.value * 1000
+    })
+  }
 }
 
 function handleQuerySelectedSensors () {
@@ -345,6 +352,11 @@ function scrollToSensorGroup(key) {
   }
 
 
+}
+
+function handleClose() {
+  active.value = false
+  emit('close')
 }
 
 defineExpose({

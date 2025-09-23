@@ -261,6 +261,7 @@ function clearSensorPoints () {
 
 function handleClosePanel () {
   // close panel
+
   selectedPoint.value = null
   // remove the buffer and sensor points
   clearBufferCircles()
