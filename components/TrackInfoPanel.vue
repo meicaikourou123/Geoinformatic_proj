@@ -338,7 +338,7 @@ function scrollToSensorGroup(key) {
   const groupEls = sensorScrollRef.value?.querySelectorAll('.sensor-group-title')
   for (const el of groupEls) {
     if (el.textContent.trim().toLowerCase().includes(key)) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       break
     }
   }
