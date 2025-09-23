@@ -287,7 +287,7 @@ const groupedSensors = computed(() => {
 function getColorForType(type) {
   const colorMap = {
     temp: '#6D94C5',
-    relh: '#f0fff4',
+    relh: '#00CED1',
     rain: '#8ABB6C',
     pres: '#FAA533',
     winv: '#1C6EA4',
@@ -342,6 +342,8 @@ function scrollToSensorGroup(key) {
       break
     }
   }
+
+
 }
 
 defineExpose({

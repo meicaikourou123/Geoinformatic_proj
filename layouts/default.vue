@@ -42,6 +42,7 @@ import TrackInfoPanel from '@/components/TrackInfoPanel.vue'
 import { circular } from 'ol/geom/Polygon'
 import { useRouter } from '#app'
 import SensorChart from '@/components/SensorChart.vue'
+import Overlay from 'ol/Overlay'
 
 const router = useRouter()
 const sensorChartData = useState('sensorChartData', () => null)
@@ -83,9 +84,25 @@ onMounted(() => {
     })
   })
 
+  const tooltipElement = document.createElement('div')
+  tooltipElement.className = 'sensor-tooltip'
+  document.body.appendChild(tooltipElement)
+
+  const tooltipOverlay = new Overlay({
+    element: tooltipElement,
+    offset: [10, 10],
+    positioning: 'bottom-left',
+    stopEvent: false
+  })
+  map.addOverlay(tooltipOverlay)
+
   map.on('click', function (evt) {
     const feature = map.forEachFeatureAtPixel(evt.pixel, f => f)
-    if (feature && feature.getGeometry().getType() === 'Point') {
+    if (
+      feature &&
+      feature.getGeometry().getType() === 'Point' &&
+      feature.getId()?.startsWith('point-')
+    ) {
       const lon = feature.get('lon')
       const lat = feature.get('lat')
       const time = feature.get('time')
@@ -94,6 +111,42 @@ onMounted(() => {
       // console.log(code, lon, lat)
 
       selectedPoint.value = { lon, lat, time, area, code }
+
+      // Add small circular buffer for trajectory point
+      const bufferRadius = (Math.sqrt(parseFloat(area)) || 0) / 3.14
+      if (bufferRadius > 0) {
+        const existingBuffers = vectorSource.getFeatures().filter(f => {
+          const id = f.getId()
+          return id && id.startsWith(`buffer-${code}-${lon}-${lat}`)
+        })
+        existingBuffers.forEach(f => vectorSource.removeFeature(f))
+
+        const circle = circular([lon, lat], bufferRadius * 1000).transform('EPSG:4326', 'EPSG:3857')
+        const circleFeature = new Feature(circle)
+        circleFeature.setId(`buffer-${code}-${lon}-${lat}`)
+        circleFeature.setStyle(
+          new Style({
+            stroke: new Stroke({ color: 'rgba(255,255,255,0.79)', width: 1 }),
+            fill: new Fill({ color: 'rgba(238,68,68,0.29)' })
+          })
+        )
+        vectorSource.addFeature(circleFeature)
+      }
+    }
+  })
+
+  map.on('pointermove', function (evt) {
+    const feature = map.forEachFeatureAtPixel(evt.pixel, f => f)
+    if (feature && feature.getGeometry().getType() === 'Point' && feature.getId()?.startsWith('sensor-')) {
+      const props = feature.getProperties()
+      tooltipElement.innerHTML = `Type: ${props.data_type || 'Unknown'}<br>ID: ${props.idsensore || 'N/A'}`
+      tooltipOverlay.setPosition(evt.coordinate)
+      tooltipElement.style.display = 'block'
+      map.getTargetElement().style.cursor = 'pointer'
+    } else {
+      tooltipElement.style.display = 'none'
+      tooltipOverlay.setPosition(undefined)
+      map.getTargetElement().style.cursor = ''
     }
   })
 })
@@ -161,6 +214,7 @@ function onDrawTrajectory({ code, points, checked }) {
 function onDrawBufferCircle({ distance, center }) {
   if (!distance || !center || !Array.isArray(center)) return
 
+  // Remove ALL buffer circles (both trajectory point buffers and manually drawn)
   const existingBuffers = vectorSource.getFeatures().filter(f => {
     const id = f.getId()
     return id && id.startsWith('buffer-')
@@ -277,8 +331,11 @@ async function handleQuerySensors({ center, distance }) {
 }
 
 function handleSelectSensor (sensor) {
-  console.log('Selected sensor for detail:', sensor)
-  // TODO: trigger detail query here if needed
+  // console.log('Selected sensor for detail:', sensor)
+  // TODO: trigger detail query here if needed  here we may do something about tooltip
+
+
+
 }
 
 function handleToggleSensor ({ sensor, checked }) {
@@ -310,11 +367,12 @@ function handleToggleSensor ({ sensor, checked }) {
     const feature = new Feature({ geometry: new Point(coord) })
     feature.setId(`sensor-${table}-${idsensore || `${lon}-${lat}`}`)
     feature.setProperties({ ...sensor, source: table })
+    const color = sensorColorMap[sensor.data_type] || sensorColorMap['Unknown'];
     feature.setStyle(
       new Style({
         image: new CircleStyle({
           radius: 5,
-          fill: new Fill({ color: 'orange' }),
+          fill: new Fill({ color }),
           stroke: new Stroke({ color: 'black', width: 1 })
         })
       })
@@ -343,10 +401,11 @@ function handleToggleAllSensors ({ checked, sensors }) {
     const idsensore = sensor.idsensore
     feature.setId(`sensor-${table}-${idsensore || `${lon}-${lat}`}`)
     feature.setProperties({ ...sensor, source: table })
+    const color = sensorColorMap[sensor.data_type] || sensorColorMap['Unknown'];
     feature.setStyle(new Style({
       image: new CircleStyle({
         radius: 5,
-        fill: new Fill({ color: 'orange' }),
+        fill: new Fill({ color }),
         stroke: new Stroke({ color: 'black', width: 1 })
       })
     }))
@@ -403,10 +462,21 @@ async function onQuerySelectedSensors (payload) {
   }
 }
 
+const sensorColorMap = {
+  temp: '#6D94C5',
+  relh: '#00CED1',
+  rain: '#8ABB6C',
+  pres: '#FAA533',
+  winv: '#1C6EA4',
+  wind: '#A8BBA3',
+  Unknown: '#f8fafc'
+};
+
 function scrollToSensorGroupByPage(page) {
   const panel = panelRef.value
   if (!panel || typeof panel.scrollToSensorGroup !== 'function') return
 
+  // Scroll to the group in the panel
   const map = {
     1: 'rain',
     2: 'relh',
@@ -417,6 +487,45 @@ function scrollToSensorGroupByPage(page) {
   }
   const key = map[page]
   if (key) panel.scrollToSensorGroup(key)
+
+  // Remove all currently displayed sensor points
+  clearSensorPoints();
+
+  // Add only those matching the current sensor type for the given page
+  const typeMap = {
+    1: 'rain',
+    2: 'relh',
+    3: 'temp',
+    4: 'pres',
+    5: 'winv',
+    6: 'wind'
+  };
+  const type = typeMap[page];
+  if (!type) return;
+
+  const matchingSensors = bufferSensors.value.filter(s => s.data_type === type);
+  for (const sensor of matchingSensors) {
+    const lon = parseFloat(sensor.lon);
+    const lat = parseFloat(sensor.lat);
+    if (!Number.isFinite(lon) || !Number.isFinite(lat)) continue;
+    const coord = fromLonLat([lon, lat]);
+    const feature = new Feature({
+      geometry: new Point(coord)
+    });
+    const table = sensor.table;
+    const idsensore = sensor.idsensore;
+    feature.setId(`sensor-${table}-${idsensore || `${lon}-${lat}`}`);
+    feature.setProperties({ ...sensor, source: table });
+    const color = sensorColorMap[sensor.data_type] || sensorColorMap['Unknown'];
+    feature.setStyle(new Style({
+      image: new CircleStyle({
+        radius: 5,
+        fill: new Fill({ color }),
+        stroke: new Stroke({ color: 'black', width: 1 })
+      })
+    }));
+    vectorSource.addFeature(feature);
+  }
 }
 </script>
 
@@ -431,5 +540,16 @@ html, body, #__nuxt, #app {
   left: auto;
   right: 12px;
   top: 12px;
+}
+.sensor-tooltip {
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  position: absolute;
+  z-index: 1000;
+  pointer-events: none;
 }
 </style>

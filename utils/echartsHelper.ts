@@ -18,7 +18,7 @@ export function buildEchartOption(results: Record<string, any[]>) {
     const legends4: string[] = []
     const legends5: string[] = []
     const legends6: string[] = []
-
+    // console.log(results.data)
     for (const [groupType, sensors] of Object.entries(results.data)) {
         for (const sensor of sensors) {
             const name = `${sensor.id}`
