@@ -330,6 +330,7 @@ function handleQuerySelectedSensors () {
     selected: selectedSensors.value,
     timeRange: timeRange.value
   })
+
 }
 
 const sensorScrollRef = ref(null)

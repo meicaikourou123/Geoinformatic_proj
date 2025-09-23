@@ -454,12 +454,17 @@ async function onQuerySelectedSensors (payload) {
       method: 'POST',
       body: payloadBody
     })
-    // console.log('Selected sensors detail:', resp)
+    // console.log('Selected sensors detail:', resp)   //here is the chart data of the sensor
     sensorChartData.value = resp   // resp must be{ pressure: [...], rain: [...], ... }
     showChart.value = true
   } catch (e) {
     console.error('Fetch sensor detail failed:', e)
   }
+
+  // here is to display chart, and I can also call the sensor draw
+  scrollToSensorGroupByPage(1)
+
+
 }
 
 const sensorColorMap = {
