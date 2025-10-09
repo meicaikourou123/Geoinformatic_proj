@@ -138,8 +138,19 @@ onMounted(() => {
   map.on('pointermove', function (evt) {
     const feature = map.forEachFeatureAtPixel(evt.pixel, f => f)
     if (feature && feature.getGeometry().getType() === 'Point' && feature.getId()?.startsWith('sensor-')) {
-      const props = feature.getProperties()
-      tooltipElement.innerHTML = `Type: ${props.data_type || 'Unknown'}<br>ID: ${props.idsensore || 'N/A'}`
+      // Show tooltip for all sensor points at the pixel
+      const pixel = evt.pixel;
+      const features = [];
+      map.forEachFeatureAtPixel(pixel, (f) => {
+        if (f.getGeometry().getType() === 'Point' && f.getId()?.startsWith('sensor-')) {
+          features.push(f);
+        }
+      });
+      const tooltipContent = features.map(f => {
+        const p = f.getProperties();
+        return `Type: ${p.data_type || 'Unknown'}<br>ID: ${p.idsensore || 'N/A'}`;
+      }).join('<hr>');
+      tooltipElement.innerHTML = tooltipContent;
       tooltipOverlay.setPosition(evt.coordinate)
       tooltipElement.style.display = 'block'
       map.getTargetElement().style.cursor = 'pointer'
@@ -374,7 +385,7 @@ function handleToggleSensor ({ sensor, checked }) {
         image: new CircleStyle({
           radius: 5,
           fill: new Fill({ color }),
-          stroke: new Stroke({ color: 'black', width: 1 })
+          stroke: new Stroke({ color: 'white', width: 1 })
         })
       })
     )
@@ -407,7 +418,7 @@ function handleToggleAllSensors ({ checked, sensors }) {
       image: new CircleStyle({
         radius: 5,
         fill: new Fill({ color }),
-        stroke: new Stroke({ color: 'black', width: 1 })
+        stroke: new Stroke({ color: 'white', width: 1 })
       })
     }))
     vectorSource.addFeature(feature)
@@ -464,10 +475,8 @@ async function onQuerySelectedSensors (payload) {
 
   // here is to display chart, and I can also call the sensor draw
   scrollToSensorGroupByPage(1)
-
-
-}
-
+};
+// the order of the table can affect the sensor display on the map
 const sensorColorMap = {
   temp: '#6D94C5',
   relh: '#00CED1',
@@ -527,7 +536,7 @@ function scrollToSensorGroupByPage(page) {
       image: new CircleStyle({
         radius: 5,
         fill: new Fill({ color }),
-        stroke: new Stroke({ color: 'black', width: 1 })
+        stroke: new Stroke({ color: 'white', width: 1 })
       })
     }));
     vectorSource.addFeature(feature);

@@ -1,4 +1,4 @@
-import { defineEventHandler, getQuery } from 'h3'
+import { defineEventHandler } from 'h3'
 import { readBody } from 'h3'
 import {createClient} from "~/server/utils/db";
 
