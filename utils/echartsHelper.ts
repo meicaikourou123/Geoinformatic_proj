@@ -71,7 +71,11 @@ export function buildEchartOption(results: Record<string, any[]>) {
                 top: '20%',
                 bottom: '10%'
             },
-            legend: { data: legends1 },
+            legend: {
+                data: legends1,
+                selectedMode: 'multiple',
+                inactiveColor: '#ffffff'
+            },
             xAxis: { type: 'time' },
             yAxis: { type: 'value' },
             series: series1
@@ -82,7 +86,11 @@ export function buildEchartOption(results: Record<string, any[]>) {
                 top: '20%',
                 bottom: '10%'
             },
-            legend: { data: legends2 },
+            legend: {
+                data: legends2,
+                selectedMode: 'multiple',
+                inactiveColor: '#ffffff'
+            },
             xAxis: { type: 'time' },
             yAxis: { type: 'value' },
             series: series2
@@ -108,6 +116,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
                 itemHeight: 14,
                 itemGap: 12,
                 width: '90%',
+                selectedMode: 'multiple',
+                inactiveColor: '#ffffff'
             },
             xAxis: { type: 'time' },
             yAxis: {
@@ -122,7 +132,11 @@ export function buildEchartOption(results: Record<string, any[]>) {
                 top: '20%',
                 bottom: '10%'
             },
-            legend: { data: legends4 },
+            legend: {
+                data: legends4,
+                selectedMode: 'multiple',
+                inactiveColor: '#ffffff'
+            },
             xAxis: { type: 'time' },
             yAxis: { type: 'value',
             scale:true
@@ -135,7 +149,11 @@ export function buildEchartOption(results: Record<string, any[]>) {
                 top: '20%',
                 bottom: '10%'
             },
-            legend: { data: legends5 },
+            legend: {
+                data: legends5,
+                selectedMode: 'multiple',
+                inactiveColor: '#ffffff'
+            },
             xAxis: { type: 'time' },
             yAxis: { type: 'value' },
             series: series5
@@ -157,6 +175,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
                 itemWidth: 15,
                 itemHeight: 15,
                 itemGap: 12,
+                selectedMode: 'multiple',
+                inactiveColor: '#ffffff'
 
             },
             grid: {
