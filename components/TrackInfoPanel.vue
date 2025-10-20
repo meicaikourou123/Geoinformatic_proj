@@ -1,7 +1,7 @@
 <template>
   <div class="custom-popup-panel" ref="popup" @click.stop>
     <div class="panel-header" @mousedown="startDrag">
-      <div class="title">Trajectory Info</div>
+      <div class="title">Storm Info</div>
       <client-only>
         <n-tooltip trigger="hover">
           <template #trigger>
