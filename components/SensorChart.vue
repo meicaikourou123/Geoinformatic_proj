@@ -2,14 +2,28 @@
   <div v-if="show" class="chartPanel" ref="chartPanel">
     <div class="header" @mousedown="startDrag">
       <span style="font-weight: bold">{{ pageTitle }}</span>
-      <button class="close-btn" @click="emit('closeChart')">×</button>
+      <button
+        class="close-btn"
+        @click="handleCloseChart"
+      >×</button>
     </div>
     <client-only>
       <div v-if="!currentOption || !currentOption.series || currentOption.series.length === 0" class="empty">
         No Sensor Data for chart display.
       </div>
-      <div v-else class="chart-box">
+      <div class="chart-box">
         <v-chart class="chart" :option="currentOption" autoresize />
+        <div class="sensor-list">
+          <h4 style="margin: 8px 0;">Selected Sensors</h4>
+          <ul v-if="selectedSensors && selectedSensors.length">
+            <li v-for="(sensor, index) in selectedSensors" :key="index">
+              {{ sensor.data_type || 'Unknown' }} - {{ sensor.idsensore || 'N/A' }}
+            </li>
+          </ul>
+          <div v-else style="color: #999; font-size: 12px;">
+            No sensors selected on map.
+          </div>
+        </div>
       </div>
       <div class="pager">
         <button @click="goPrevPage" :disabled="currentPage === 1">Pre</button>
@@ -23,12 +37,12 @@
 <script setup>
 defineOptions({ ssr: false })
 
-import { ref, watchEffect, defineAsyncComponent, computed } from 'vue'
+import { ref, watchEffect, defineAsyncComponent, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useDraggable } from '@/composables/useDraggable'
 import { buildEchartOption } from '~/utils/echartsHelper'
 
 const VChart = defineAsyncComponent(() => import('vue-echarts'))
-
+const selectedSensors = useState('selectedSensorsOnMap', () => [])
 const chartPanel = ref(null)
 const { startDrag } = useDraggable(chartPanel)
 
@@ -92,6 +106,24 @@ watchEffect(() => {
     emit('pageChange', 1)  // 初始时触发一次 chartPage 为 1 的事件
   }
 })
+
+onMounted(() => {
+  const updateSelectedSensors = (e) => {
+    selectedSensors.value = e.detail || []
+  }
+  window.addEventListener('sensor-selected', updateSelectedSensors)
+  onBeforeUnmount(() => {
+    window.removeEventListener('sensor-selected', updateSelectedSensors)
+  })
+})
+
+function handleCloseChart() {
+  selectedSensors.value = []
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('clear-highlighted-sensors'))
+  }
+  emit('closeChart')
+}
 </script>
 
 <style scoped>

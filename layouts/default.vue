@@ -59,6 +59,13 @@ let map
 let vectorSource
 
 onMounted(() => {
+  window.addEventListener('clear-highlighted-sensors', () => {
+    const highlighted = vectorSource.getFeatures().filter(f => {
+      const id = f.getId();
+      return id && id.startsWith('buffer-sensor-');
+    });
+    highlighted.forEach(f => vectorSource.removeFeature(f));
+  });
   vectorSource = new VectorSource()
   const vectorLayer = new VectorLayer({
     source: vectorSource,
@@ -131,6 +138,75 @@ onMounted(() => {
           })
         )
         vectorSource.addFeature(circleFeature)
+      }
+    }
+    // Handle sensor point click
+    else if (
+      feature &&
+      feature.getGeometry().getType() === 'Point' &&
+      feature.getId()?.startsWith('sensor-')
+    ) {
+      const props = feature.getProperties()
+      const lon = parseFloat(props.lon)
+      const lat = parseFloat(props.lat)
+      const type = props.data_type || 'Unknown'
+
+      if (!isNaN(lon) && !isNaN(lat)) {
+        // Create a small buffer around the sensor
+        const bufferRadius = 3 * 1000 // 0.5 km radius in meters
+        const circle = circular([lon, lat], bufferRadius).transform('EPSG:4326', 'EPSG:3857')
+        const circleFeature = new Feature(circle)
+        circleFeature.setId(`buffer-sensor-${props.idsensore}`)
+        circleFeature.setStyle(
+          new Style({
+            stroke: new Stroke({ color: 'red', width: 2 }),
+            fill: new Fill({ color: 'rgba(68,68,238,0.3)' })
+          })
+        )
+
+        // Remove existing buffer for same sensor if exists
+        const existing = vectorSource.getFeatureById(`buffer-sensor-${props.idsensore}`)
+        if (existing) vectorSource.removeFeature(existing)
+
+        vectorSource.addFeature(circleFeature)
+
+        // Add only the clicked sensor to the list
+        const selectedSensorsOnMap = useState('selectedSensorsOnMap', () => [])
+
+        const selected = {
+          ...props,
+          table: props.source || props.table || 'unknown'
+        };
+
+        const exists = selectedSensorsOnMap.value.some(
+          s => s.idsensore === selected.idsensore && s.data_type === selected.data_type
+        );
+        if (exists) {
+          selectedSensorsOnMap.value = selectedSensorsOnMap.value.filter(
+            s => !(s.idsensore === selected.idsensore && s.data_type === selected.data_type)
+          );
+          // Remove buffer feature
+          const buffer = vectorSource.getFeatureById(`buffer-sensor-${props.idsensore}`);
+          if (buffer) vectorSource.removeFeature(buffer);
+
+          // Reset sensor color to default
+          const sensorFeature = vectorSource.getFeatureById(`sensor-${props.source}-${props.idsensore}`);
+          if (sensorFeature) {
+
+            const colorKey = (selected.table?.slice(0, -6) || '') + selected.idsensore;
+            const typeColor = sensorColorMap[selected.data_type] || sensorColorMap['Unknown'];
+            const color = sensorColorMap[colorKey] || typeColor;
+            feature.setStyle(new Style({
+              image: new CircleStyle({
+                radius: 5,
+                fill: new Fill({ color }),
+                stroke: new Stroke({ color: 'white', width: 1 })
+              })
+            }));
+          }
+        } else {
+          selectedSensorsOnMap.value.push(selected);
+        }
       }
     }
   })

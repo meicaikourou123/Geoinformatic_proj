@@ -4,7 +4,7 @@
     padding: 6px 10px;
     border-radius: 10px;
     border: 1px solid #ccc;
-    width: 500px;
+    width: 700px;
     height: 350px;
     font-size: 12px;
     position: fixed;
@@ -15,7 +15,22 @@
     pointer-events: auto;
     overflow: hidden;
 }
+.chart-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
 
+.sensor-list {
+    width: 180px;
+    margin-left: 16px;
+    font-size: 13px;
+    background: #f5f5f5;
+    border-left: 1px solid #ccc;
+    padding-left: 12px;
+    overflow-y: auto;
+    max-height: 400px;
+}
 .empty {
     padding: 24px;
     color: #666;

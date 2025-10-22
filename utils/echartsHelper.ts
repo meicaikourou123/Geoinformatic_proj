@@ -101,6 +101,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
             tooltip: { trigger: 'axis' },
             grid: {
                 top: '20%',
+                left:'5%',
+                right:'2%',
                 bottom: '10%'
             },
             legend: {
@@ -116,6 +118,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
             tooltip: { trigger: 'axis' },
             grid: {
                 top: '20%',
+                left:'5%',
+                right:'2%',
                 bottom: '10%'
             },
             legend: {
@@ -136,6 +140,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
             },
             grid: {
                     top: '25%',
+                    left:'5%',
+                    right:'2%',
                     bottom: '10%'
             },
             legend: {
@@ -162,6 +168,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
             tooltip: { trigger: 'axis' },
             grid: {
                 top: '20%',
+                left:'5%',
+                right:'2%',
                 bottom: '10%'
             },
             legend: {
@@ -179,6 +187,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
             tooltip: { trigger: 'axis' },
             grid: {
                 top: '20%',
+                left:'5%',
+                right:'2%',
                 bottom: '10%'
             },
             legend: {
