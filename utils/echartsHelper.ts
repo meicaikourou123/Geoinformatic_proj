@@ -1,3 +1,28 @@
+export const sensorColorMap: Record<string, string> = {};
+// Default colors for known sensor types
+Object.assign(sensorColorMap, {
+  temp: '#6D94C5',
+  relh: '#00CED1',
+  rain: '#8ABB6C',
+  pres: '#FAA533',
+  winv: '#1C6EA4',
+  wind: '#A8BBA3',
+  Unknown: '#000000'
+});
+// Sensor color assignment for legend and chart consistency
+const colorPalette = [
+    '#5470C6', '#91CC75', '#EE6666', '#FAC858', '#73C0DE',
+    '#3BA272', '#FC8452', '#9A60B4', '#EA7CCC', '#6E7074',
+    '#546570', '#C4CCD3', '#fffac8', '#800000', '#aaffc3',
+  '#808000', '#ffd8b1', '#000075', '#a9a9a9', '#008080'
+];
+let colorIndex = 0;
+
+const getNextColor = () => {
+  const color = colorPalette[colorIndex % colorPalette.length];
+  colorIndex++;
+  return color;
+};
 export function buildEchartOption(results: Record<string, any[]>) {
     // because we need to display the data on 3 charts, we need to divide the data
     // 1 rain
@@ -21,14 +46,21 @@ export function buildEchartOption(results: Record<string, any[]>) {
     // console.log(results.data)
     for (const [groupType, sensors] of Object.entries(results.data)) {
         for (const sensor of sensors) {
-            const name = `${sensor.id}`
-            const data = sensor.data.map((row: any) => [row.date_time, row.data])
-            const seriesItem={
-                    name,
-                    type: 'line',
-                    showSymbol: false,
-                    data: data
+            const name = `${sensor.table?.slice(0, -6) || ''}${sensor.id}`;  // 与 default.vue 中的一致
+            const data = sensor.data.map((row: any) => [row.date_time, row.data]);
+            // Assign consistent color for each sensor name
+            if (!sensorColorMap[name]) {
+                sensorColorMap[name] = getNextColor();
             }
+            const color = sensorColorMap[name];
+            const seriesItem = {
+                name,
+                // type: groupType == 'wind' ? 'scatter' : 'line',
+                type: 'line',
+                showSymbol: false,
+                data,
+                itemStyle: { color }
+            };
 
             // const name = `${groupType}_${sensor.id}`
            if(groupType=='rain'){
@@ -167,7 +199,6 @@ export function buildEchartOption(results: Record<string, any[]>) {
       Direction: ${params.value[1]}°
     `
             },
-
             legend: {
                 data: legends6,
                 left: 'left',
@@ -205,6 +236,9 @@ export function buildEchartOption(results: Record<string, any[]>) {
                 type: 'scatter',
                 coordinateSystem: 'polar',
                 symbolSize: 8,
+                itemStyle: {
+                    color: sensorColorMap[s.name] || sensorColorMap['Unknown']
+                },
                 data: s.data
                     .map((d: any) => {
                         const windDir = Number(d[1])

@@ -15,7 +15,7 @@
       @toggleSensor="handleToggleSensor"
       @toggleAllSensors="handleToggleAllSensors"
       @querySelectedSensors="onQuerySelectedSensors"
-      @close="handleClosePanel"
+      @close="() => { handleClosePanel(); showChart = false }"
     />
     <SensorChart  v-if="showChart" :show="showChart" @closeChart="showChart = false" :data="sensorChartData" @pageChange="scrollToSensorGroupByPage" />
   </div>
@@ -43,9 +43,11 @@ import { circular } from 'ol/geom/Polygon'
 import { useRouter } from '#app'
 import SensorChart from '@/components/SensorChart.vue'
 import Overlay from 'ol/Overlay'
-
+import { sensorColorMap } from '@/utils/echartsHelper';
 const router = useRouter()
+
 const sensorChartData = useState('sensorChartData', () => null)
+
 const selectedPoint = ref(null)
 const bufferSensors = ref([])
 const panelRef = ref(null)
@@ -57,8 +59,6 @@ let map
 let vectorSource
 
 onMounted(() => {
-
-
   vectorSource = new VectorSource()
   const vectorLayer = new VectorLayer({
     source: vectorSource,
@@ -346,8 +346,6 @@ function handleSelectSensor (sensor) {
   // console.log('Selected sensor for detail:', sensor)
   // TODO: trigger detail query here if needed  here we may do something about tooltip
 
-
-
 }
 
 function handleToggleSensor ({ sensor, checked }) {
@@ -379,7 +377,9 @@ function handleToggleSensor ({ sensor, checked }) {
     const feature = new Feature({ geometry: new Point(coord) })
     feature.setId(`sensor-${table}-${idsensore || `${lon}-${lat}`}`)
     feature.setProperties({ ...sensor, source: table })
-    const color = sensorColorMap[sensor.data_type] || sensorColorMap['Unknown'];
+    const colorKey = (sensor.table?.slice(0, -6) || '') + sensor.idsensore;
+    const typeColor = sensorColorMap[sensor.data_type] || sensorColorMap['Unknown'];
+    const color = sensorColorMap[colorKey] || typeColor;
     feature.setStyle(
       new Style({
         image: new CircleStyle({
@@ -413,7 +413,9 @@ function handleToggleAllSensors ({ checked, sensors }) {
     const idsensore = sensor.idsensore
     feature.setId(`sensor-${table}-${idsensore || `${lon}-${lat}`}`)
     feature.setProperties({ ...sensor, source: table })
-    const color = sensorColorMap[sensor.data_type] || sensorColorMap['Unknown'];
+    const colorKey = (sensor.table?.slice(0, -6) || '') + sensor.idsensore;
+    const typeColor = sensorColorMap[sensor.data_type] || sensorColorMap['Unknown'];
+    const color = sensorColorMap[colorKey] || typeColor;
     feature.setStyle(new Style({
       image: new CircleStyle({
         radius: 5,
@@ -476,16 +478,6 @@ async function onQuerySelectedSensors (payload) {
   // here is to display chart, and I can also call the sensor draw
   scrollToSensorGroupByPage(1)
 };
-// the order of the table can affect the sensor display on the map
-const sensorColorMap = {
-  temp: '#6D94C5',
-  relh: '#00CED1',
-  rain: '#8ABB6C',
-  pres: '#FAA533',
-  winv: '#1C6EA4',
-  wind: '#A8BBA3',
-  Unknown: '#f8fafc'
-};
 
 function scrollToSensorGroupByPage(page) {
   const panel = panelRef.value
@@ -531,7 +523,9 @@ function scrollToSensorGroupByPage(page) {
     const idsensore = sensor.idsensore;
     feature.setId(`sensor-${table}-${idsensore || `${lon}-${lat}`}`);
     feature.setProperties({ ...sensor, source: table });
-    const color = sensorColorMap[sensor.data_type] || sensorColorMap['Unknown'];
+    const colorKey = (sensor.table?.slice(0, -6) || '') + sensor.idsensore;
+    const typeColor = sensorColorMap[sensor.data_type] || sensorColorMap['Unknown'];
+    const color = sensorColorMap[colorKey] || typeColor;
     feature.setStyle(new Style({
       image: new CircleStyle({
         radius: 5,

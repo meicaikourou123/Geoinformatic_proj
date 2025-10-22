@@ -89,6 +89,7 @@ watchEffect(() => {
   if (chartData.value && Object.keys(chartData.value).length > 0) {
     // console.log(chartData)
     option.value = buildEchartOption(chartData.value)
+    emit('pageChange', 1)  // 初始时触发一次 chartPage 为 1 的事件
   }
 })
 </script>

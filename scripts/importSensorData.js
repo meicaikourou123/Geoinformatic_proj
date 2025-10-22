@@ -39,10 +39,10 @@ async function insertRow(row) {
     try {
         const lat = parseFloat(row[columns.lat]);
         const lon = parseFloat(row[columns.lon]);
-
+//transform from 4326 geographic reference to 32632 project reference. from the degree to the meter.
         let geom = null;
         if (!isNaN(lat) && !isNaN(lon)) {
-            const [x, y] = proj4('EPSG:4326', 'EPSG:32632', [lon, lat]); // 注意 lon, lat 顺序
+            const [x, y] = proj4('EPSG:4326', 'EPSG:32632', [lon, lat]);
             geom = `SRID=32632;POINT(${x} ${y})`;
         }
 
