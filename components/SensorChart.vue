@@ -13,8 +13,9 @@
       </div>
       <div class="chart-box">
         <v-chart class="chart" :option="currentOption" autoresize />
-        <div class="sensor-list">
-          <h4 style="margin: 8px 0;">Selected Sensors</h4>
+        <div class="sensor-right">
+          <h4 style="margin: 2px 0;">Selected Sensors</h4>
+          <div class="sensor-list">
           <ul v-if="selectedSensors && selectedSensors.length">
             <li v-for="(sensor, index) in selectedSensors" :key="index">
               {{ sensor.data_type || 'Unknown' }} - {{ sensor.idsensore || 'N/A' }}
@@ -22,6 +23,7 @@
           </ul>
           <div v-else style="color: #999; font-size: 12px;">
             No sensors selected on map.
+          </div>
           </div>
         </div>
       </div>

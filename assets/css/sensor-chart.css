@@ -4,7 +4,7 @@
     padding: 6px 10px;
     border-radius: 10px;
     border: 1px solid #ccc;
-    width: 700px;
+    width: 750px;
     height: 350px;
     font-size: 12px;
     position: fixed;
@@ -21,15 +21,22 @@
     justify-content: space-between;
 }
 
-.sensor-list {
+.sensor-right {
+    flex: 0 0 180px;
     width: 180px;
-    margin-left: 16px;
-    font-size: 13px;
-    background: #f5f5f5;
-    border-left: 1px solid #ccc;
-    padding-left: 12px;
+    height: 210px;
+
     overflow-y: auto;
-    max-height: 400px;
+    box-sizing: border-box;
+}
+.sensor-list {
+    width: 178px;
+    height: 180px;
+    font-size: 13px;
+    border: 1px solid #ccc;
+    background-color: blanchedalmond;
+    border-radius: 5px;
+    overflow-y: auto;
 }
 .empty {
     padding: 24px;
