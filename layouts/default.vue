@@ -552,7 +552,6 @@ async function onQuerySelectedSensors (payload) {
       start: timeRange.startISO,
       end: timeRange.endISO
     }
-
     const resp = await $fetch('/api/query-sensor-detail', {
       method: 'POST',
       body: payloadBody

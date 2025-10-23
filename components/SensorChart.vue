@@ -27,8 +27,24 @@
 
           </div>
 
-<!--          Here I will add the analysis result, also control its display-->
-
+          <!-- Analysis Result Panel -->
+          <div v-if="showAnalysis" class="analysis-result">
+            <h4 style="margin: 0px 0;">Analysis Result</h4>
+            <div class="analysis-table">
+              <div class="analysis-row header">
+                <div class="cell type">Type</div>
+                <div class="cell max">Max</div>
+                <div class="cell min">Min</div>
+                <div class="cell mean">Mean</div>
+              </div>
+              <div v-for="(result, index) in analysisResults" :key="index" class="analysis-row">
+                <div class="cell type">{{ result.type }}</div>
+                <div class="cell max">{{ result.max }}</div>
+                <div class="cell min">{{ result.min }}</div>
+                <div class="cell mean">{{ result.mean }}</div>
+              </div>
+            </div>
+          </div>
 
 
           <!-- footer with action buttons -->
@@ -70,8 +86,10 @@ import { buildEchartOption } from '~/utils/echartsHelper'
 
 const VChart = defineAsyncComponent(() => import('vue-echarts'))
 const selectedSensors = useState('selectedSensorsOnMap', () => [])
+const analysisResults = ref([])
 const chartPanel = ref(null)
 const { startDrag } = useDraggable(chartPanel)
+const showAnalysis = ref(false)
 
 const props = defineProps({
   show: Boolean
@@ -156,12 +174,43 @@ function clearSelectedSensors(){
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('clear-highlighted-sensors'))
   }
+  showAnalysis.value=false
 }
 
-function analyzeSelectedSensors(){
-
+function analyzeSelectedSensors() {
+  if (!selectedSensors.value.length || !chartData.value) {
+    analysisResults.value = []
+    return
+  }
+  const typeStats = {}
+  Object.entries(chartData.value.data).forEach(([type, sensorsData]) => {
+    if (!Array.isArray(sensorsData)) return
+    sensorsData.forEach(sensorData => {
+      const sensorId = sensorData.id
+      if (!sensorId) return
+      const isSelected = selectedSensors.value.some(sel =>
+        (sel.data_type + '_' + sel.idsensore) === sensorId
+      )
+      if (!isSelected) return
+      const values = (sensorData.data || [])
+        .map(d => typeof d === 'object' ? parseFloat(d.data) : d)
+        .filter(v => typeof v === 'number' && !isNaN(v))
+      if (!values.length) return
+      if (!typeStats[type]) {
+        typeStats[type] = []
+      }
+      typeStats[type].push(...values)
+    })
+  })
+  const result = Object.entries(typeStats).map(([type, values]) => {
+    const max = Math.max(...values)
+    const min = Math.min(...values)
+    const mean = (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2)
+    return { type, max, min, mean }
+  })
+  showAnalysis.value=true
+  analysisResults.value = result
 }
-
 function downloadSelectedSensors(){
 
 }
