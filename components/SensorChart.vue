@@ -22,7 +22,7 @@
               </li>
             </ul>
             <div v-else class="sensor-list-empty" style="color: #999; font-size: 12px;">
-              No sensors selected on map.
+              No sensors selected on map. <br>Please select sensor from map then analyze them.
             </div>
 
           </div>
@@ -83,6 +83,7 @@ import { NButton} from 'naive-ui'
 import { ref, watchEffect, defineAsyncComponent, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useDraggable } from '@/composables/useDraggable'
 import { buildEchartOption } from '~/utils/echartsHelper'
+import * as XLSX from 'xlsx'
 
 const VChart = defineAsyncComponent(() => import('vue-echarts'))
 const selectedSensors = useState('selectedSensorsOnMap', () => [])
@@ -192,6 +193,8 @@ function analyzeSelectedSensors() {
         (sel.data_type + '_' + sel.idsensore) === sensorId
       )
       if (!isSelected) return
+
+      console.log(sensorData.data)
       const values = (sensorData.data || [])
         .map(d => typeof d === 'object' ? parseFloat(d.data) : d)
         .filter(v => typeof v === 'number' && !isNaN(v))
@@ -211,8 +214,36 @@ function analyzeSelectedSensors() {
   showAnalysis.value=true
   analysisResults.value = result
 }
-function downloadSelectedSensors(){
+function downloadSelectedSensors() {
+  if (!selectedSensors.value.length || !chartData.value || !chartData.value.data) return;
 
+  const workbook = XLSX.utils.book_new();
+
+  // Iterate over each sensor type
+  for (const [type, sensors] of Object.entries(chartData.value.data)) {
+    const rows = [];
+
+    sensors.forEach(sensor => {
+      const sensorId = sensor.id;
+      const isSelected = selectedSensors.value.some(sel =>
+        (sel.data_type + '_' + sel.idsensore) === sensorId
+      );
+      if (!isSelected || !sensor.data) return;
+
+      sensor.data.forEach(entry => {
+        if (entry && typeof entry === 'object') {
+          rows.push([sensorId, entry.date_time|| '', entry.data]);
+        }
+      });
+    });
+
+    if (rows.length) {
+      const worksheet = XLSX.utils.aoa_to_sheet([['ID', 'Time', 'Data'], ...rows]);
+      XLSX.utils.book_append_sheet(workbook, worksheet, type);
+    }
+  }
+
+  XLSX.writeFile(workbook, 'selected_sensors.xlsx');
 }
 </script>
 

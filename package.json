@@ -27,6 +27,7 @@
     "vue-draggable-resizable-vue3": "^2.3.1-beta.13",
     "vue-echarts": "^7.0.3",
     "vue-router": "^4.5.1",
-    "vueuc": "^0.3.12"
+    "vueuc": "^0.3.12",
+    "xlsx": "^0.18.5"
   }
 }
