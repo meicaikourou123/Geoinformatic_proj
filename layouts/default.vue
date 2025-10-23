@@ -1,12 +1,24 @@
 <template>
   <div class="layout">
     <client-only>
-      <SidebarMenu @drawTrajectory="onDrawTrajectory"/>
+    <n-tooltip trigger="hover">
+      <template #trigger>
+        <n-button class="global-toggle-btn" strong secondary circle type="primary" size="tiny"  @click="collapsed = !collapsed" >
+          <template #icon class="hide-button">
+            <img src="/icons/polimi.jpeg" alt="display" style="width: 30px; height: 30px;border-radius: 50%;" />
+          </template>
+        </n-button>
+      </template>
+      <template #default>
+        <span>{{ collapsed ? 'Show Panel' : 'Hide Panel' }}</span>
+      </template>
+    </n-tooltip>
+      <SidebarMenu v-show="!collapsed" @drawTrajectory="onDrawTrajectory"/>
     </client-only>
     <NuxtPage />
     <TrackInfoPanel
       ref="panelRef"
-      v-show="!!selectedPoint"
+      v-show="!!selectedPoint&&!collapsed"
       :track-data="selectedPoint"
       :sensors="bufferSensors"
       @querySensors="handleQuerySensors"
@@ -44,6 +56,7 @@ import { useRouter } from '#app'
 import SensorChart from '@/components/SensorChart.vue'
 import Overlay from 'ol/Overlay'
 import { sensorColorMap } from '@/utils/echartsHelper';
+import {NButton, NTooltip} from "naive-ui";
 const router = useRouter()
 
 const sensorChartData = useState('sensorChartData', () => null)
@@ -51,8 +64,9 @@ const sensorChartData = useState('sensorChartData', () => null)
 const selectedPoint = ref(null)
 const bufferSensors = ref([])
 const panelRef = ref(null)
-
 const showChart = ref(false)
+
+const collapsed = ref(true)
 
 
 let map
@@ -638,15 +652,19 @@ html, body, #__nuxt, #app {
   right: 12px;
   top: 12px;
 }
-.sensor-tooltip {
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
+.global-toggle-btn {
   position: absolute;
+  top: 22px;
+  left: 10px;
   z-index: 1000;
-  pointer-events: none;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.hide-button{
+  border-radius: 5px;
 }
 </style>

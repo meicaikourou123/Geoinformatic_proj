@@ -9,12 +9,12 @@
             placeholder="Select date range"
             class="date-picker"
         />
-
         <n-button type="primary" class="query-button" size="small"  @click="queryData">query</n-button>
       </div>
       <div class="result-panel" v-if="queryResult.length > 0">
         <div class="summary-row">
           Found {{ queryResult.length }} Strom records.
+
         </div>
         <n-data-table
             :columns="columns"
@@ -37,7 +37,7 @@
 import { ref,onMounted } from 'vue'
 import { useDraggable } from '@/composables/useDraggable'
 import {formatTimestamp} from "~/utils/formats.ts";
-import { NTree, NDatePicker, NButton, NDataTable, NConfigProvider } from 'naive-ui'
+import { NDatePicker, NButton, NDataTable, NConfigProvider } from 'naive-ui'
 
 
 
