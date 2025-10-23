@@ -57,6 +57,7 @@ const showChart = ref(false)
 
 let map
 let vectorSource
+let persistentTrackBufferLayer
 
 onMounted(() => {
   window.addEventListener('clear-highlighted-sensors', () => {
@@ -77,13 +78,23 @@ onMounted(() => {
     })
   })
 
+  // Persistent buffer layer for trajectory points
+  persistentTrackBufferLayer = new VectorLayer({
+    source: new VectorSource(),
+    style: new Style({
+      stroke: new Stroke({ color: 'rgba(255,255,255,0.79)', width: 1 }),
+      fill: new Fill({ color: 'rgba(238,68,68,0.29)' })
+    })
+  });
+
   map = new Map({
     target: 'map',
     layers: [
       new TileLayer({
         source: new OSM()
       }),
-      vectorLayer
+      vectorLayer,
+      persistentTrackBufferLayer
     ],
     view: new View({
       center: fromLonLat([8.9, 45.583333]),
@@ -119,25 +130,17 @@ onMounted(() => {
 
       selectedPoint.value = { lon, lat, time, area, code }
 
-      // Add small circular buffer for trajectory point
+      // Add small circular buffer for trajectory point using persistent layer
       const bufferRadius = (Math.sqrt(parseFloat(area)) || 0) / 3.14
       if (bufferRadius > 0) {
-        const existingBuffers = vectorSource.getFeatures().filter(f => {
-          const id = f.getId()
-          return id && id.startsWith(`buffer-${code}-${lon}-${lat}`)
-        })
-        existingBuffers.forEach(f => vectorSource.removeFeature(f))
-
-        const circle = circular([lon, lat], bufferRadius * 1000).transform('EPSG:4326', 'EPSG:3857')
-        const circleFeature = new Feature(circle)
-        circleFeature.setId(`buffer-${code}-${lon}-${lat}`)
-        circleFeature.setStyle(
-          new Style({
-            stroke: new Stroke({ color: 'rgba(255,255,255,0.79)', width: 1 }),
-            fill: new Fill({ color: 'rgba(238,68,68,0.29)' })
-          })
-        )
-        vectorSource.addFeature(circleFeature)
+        const persistentSrc = persistentTrackBufferLayer.getSource();
+        const bufferId = `track-buffer-${code}`;
+        const existing = persistentSrc.getFeatureById(bufferId);
+        if (existing) persistentSrc.removeFeature(existing);
+        const circle = circular([lon, lat], bufferRadius * 1000).transform('EPSG:4326', 'EPSG:3857');
+        const feature = new Feature(circle);
+        feature.setId(bufferId);
+        persistentSrc.addFeature(feature);
       }
     }
     // Handle sensor point click
@@ -336,6 +339,11 @@ function clearBufferCircles () {
     return id && id.startsWith('buffer-')
   })
   buffers.forEach(f => vectorSource.removeFeature(f))
+  // Also clear persistent trajectory point buffers
+  if (persistentTrackBufferLayer) {
+    const src = persistentTrackBufferLayer.getSource();
+    src.getFeatures().forEach(f => src.removeFeature(f));
+  }
 }
 function clearSensorPoints () {
   if (!vectorSource) return
@@ -348,11 +356,16 @@ function clearSensorPoints () {
 
 function handleClosePanel () {
   // close panel
-
   selectedPoint.value = null
   // remove the buffer and sensor points
   clearBufferCircles()
   clearSensorPoints()
+  // Also remove the persistent trajectory buffer for this track if present
+  if (persistentTrackBufferLayer && selectedPoint.value && selectedPoint.value.code) {
+    const src = persistentTrackBufferLayer.getSource();
+    const bufferFeature = src.getFeatureById(`track-buffer-${selectedPoint.value.code}`);
+    if (bufferFeature) src.removeFeature(bufferFeature);
+  }
 }
 
 async function handleQuerySensors({ center, distance }) {

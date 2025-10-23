@@ -1,10 +1,9 @@
-
 .chartPanel {
     background-color: lightblue;
     padding: 6px 10px;
     border-radius: 10px;
     border: 1px solid #ccc;
-    width: 750px;
+    width: 740px;
     height: 350px;
     font-size: 12px;
     position: fixed;
@@ -22,22 +21,52 @@
 }
 
 .sensor-right {
-    flex: 0 0 180px;
-    width: 180px;
-    height: 210px;
-
+    flex: 0 0 150px;
+    width: 150px;
+    height: 200px;
     overflow-y: auto;
     box-sizing: border-box;
 }
 .sensor-list {
-    width: 175px;
-    height: 180px;
+    width: 140px;
+    height: 170px;
     font-size: 13px;
-    border: 1px solid #ccc;
+    border: 1px solid #ffffff;
     background-color: blanchedalmond;
     border-radius: 5px;
     overflow-y: auto;
+    position: relative;          /* allow footer to be absolutely positioned */
+    padding: 8px;               /* add inner spacing */
+    box-sizing: border-box;
+    padding-bottom: 46px;       /* reserve space for footer */
 }
+.sensor-list-items {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+.sensor-list-items li {
+    padding: 4px 0;
+    font-size: 12px;
+}
+.sensor-list-empty {
+    padding: 8px 4px;
+}
+.sensor-list-button {
+    position: absolute;
+    margin-top: 3px;
+    right: 22px;
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+.btn {
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.btn-sm { padding: 2px 4px; font-size: 12px }
+
 .empty {
     padding: 24px;
     color: #666;
