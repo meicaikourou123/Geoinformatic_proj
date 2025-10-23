@@ -9,13 +9,14 @@ import { CanvasRenderer } from 'echarts/renderers'
 import { LineChart, BarChart,ScatterChart,  } from 'echarts/charts'
 
 // import component
+import * as echarts from 'echarts/core'
 import {
-    GridComponent,
+    TitleComponent,
     TooltipComponent,
     LegendComponent,
+    GridComponent,
     PolarComponent,
-
-    TitleComponent
+    MarkPointComponent
 } from 'echarts/components'
 
 export default defineNuxtPlugin(() => {
@@ -28,8 +29,7 @@ export default defineNuxtPlugin(() => {
         LegendComponent,
         PolarComponent,
         ScatterChart,
-        TitleComponent
+        TitleComponent,
+        MarkPointComponent
     ])
-
-    // console.log('✅ ECharts plugin registered')
 })

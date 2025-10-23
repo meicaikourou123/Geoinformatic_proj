@@ -53,14 +53,34 @@ export function buildEchartOption(results: Record<string, any[]>) {
                 sensorColorMap[name] = getNextColor();
             }
             const color = sensorColorMap[name];
-            const seriesItem = {
-                name,
-                // type: groupType == 'wind' ? 'scatter' : 'line',
-                type: 'line',
-                showSymbol: false,
-                data,
-                itemStyle: { color }
-            };
+            const seriesItem = groupType === 'wind'
+                ? {
+                    name,
+                    type: 'scatter',
+                    showSymbol: false,
+                    data,
+                    itemStyle: { color }
+                }
+                : {
+                    name,
+                    type: 'line',
+                    showSymbol: false,
+                    data,
+                    itemStyle: { color },
+                    markPoint: {
+                        data: [
+                            { type: 'max', name: 'Max' },
+                            ...(sensor.data.length > 0 && Math.min(...sensor.data.map((d: any) => d.data)) > 0
+                                ? [{ type: 'min', name: 'Min' }]
+                                : [])
+                        ],
+                        label: {
+                            formatter: (param: any) => `\n${param.name}: ${param.value}`,
+                            fontSize: 10
+                        },
+                        symbolSize: 10
+                    }
+                };
 
             // const name = `${groupType}_${sensor.id}`
            if(groupType=='rain'){
@@ -81,7 +101,6 @@ export function buildEchartOption(results: Record<string, any[]>) {
                series5.push(seriesItem)
            }
            else if(groupType=='wind'){
-               seriesItem.type='scatter'
                legends6.push(name)
                series6.push(seriesItem)
            }
@@ -101,8 +120,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
             tooltip: { trigger: 'axis' },
             grid: {
                 top: '20%',
-                left:'5%',
-                right:'5%',
+                left:'10%',
+                right:'10%',
                 bottom: '10%'
             },
             legend: {
@@ -118,8 +137,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
             tooltip: { trigger: 'axis' },
             grid: {
                 top: '20%',
-                left:'5%',
-               right:'5%',
+                left:'10%',
+                right:'10%',
                 bottom: '10%'
             },
             legend: {
@@ -140,8 +159,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
             },
             grid: {
                     top: '25%',
-                    left:'5%',
-                   right:'5%',
+                    left:'10%',
+                    right:'10%',
                     bottom: '10%'
             },
             legend: {
@@ -168,8 +187,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
             tooltip: { trigger: 'axis' },
             grid: {
                 top: '20%',
-                left:'5%',
-               right:'5%',
+                left:'7%',
+                right:'10%',
                 bottom: '10%'
             },
             legend: {
@@ -187,8 +206,8 @@ export function buildEchartOption(results: Record<string, any[]>) {
             tooltip: { trigger: 'axis' },
             grid: {
                 top: '20%',
-                left:'5%',
-               right:'5%',
+                left:'10%',
+                right:'10%',
                 bottom: '10%'
             },
             legend: {
@@ -201,66 +220,66 @@ export function buildEchartOption(results: Record<string, any[]>) {
             series: series5
         },
 
-        chartData6: {
+        ...(series6.length > 0 ? {
+          chartData6: {
             tooltip: {
-                trigger: 'item',
-                formatter: (params: any) => `
-      Time: ${params.value[2]}<br/>
-      Direction: ${params.value[1]}°
-    `
+              trigger: 'item',
+              formatter: (params: any) => `
+                Time: ${params.value[2]}<br/>
+                Direction: ${params.value[1]}°
+              `
             },
             legend: {
-                data: legends6,
-                left: 'left',
-                orient: 'vertical',
-                itemWidth: 15,
-                itemHeight: 15,
-                itemGap: 12,
-                selectedMode: 'multiple',
-                inactiveColor: '#ffffff'
-
+              data: legends6,
+              left: 'left',
+              orient: 'vertical',
+              itemWidth: 15,
+              itemHeight: 15,
+              itemGap: 12,
+              selectedMode: 'multiple',
+              inactiveColor: '#ffffff'
             },
             grid: {
-                top: '20%',
-                bottom: '10%',
-                right:'10%'
+              top: '10%',
+              bottom: '10%',
+              right: '10%'
             },
             polar: {},
             angleAxis: {
-                type: 'value',
-                min: 0,
-                max: 360,
-                boundaryGap: false,
-                splitLine: { show: true },
-                axisLine: { show: false }
+              type: 'value',
+              min: 0,
+              max: 360,
+              boundaryGap: false,
+              splitLine: { show: true },
+              axisLine: { show: false }
             },
             radiusAxis: {
-                type: 'category',
-                data: timeIndex,
-                axisLabel: { show: false },
-                axisTick: { show: true },
-                splitNumber: 12
+              type: 'category',
+              data: timeIndex,
+              axisLabel: { show: false },
+              axisTick: { show: true },
+              splitNumber: 12
             },
             series: series6.map(s => ({
-                name: s.name,
-                type: 'scatter',
-                coordinateSystem: 'polar',
-                symbolSize: 8,
-                itemStyle: {
-                    color: sensorColorMap[s.name] || sensorColorMap['Unknown']
-                },
-                data: s.data
-                    .map((d: any) => {
-                        const windDir = Number(d[1])
-                        const timeStr = d[0]
-                        if (isNaN(windDir)) return null
-                        const radiusIndex = timeIndex.indexOf(timeStr)
-                        if (radiusIndex === -1) return null
-                        // [time_index, wind_direction, timestr]
-                        return [ radiusIndex,windDir, timeStr]
-                    })
-                    .filter(Boolean)
+              name: s.name,
+              type: 'scatter',
+              coordinateSystem: 'polar',
+              symbolSize: 8,
+              itemStyle: {
+                color: sensorColorMap[s.name] || sensorColorMap['Unknown']
+              },
+              data: s.data
+                .map((d: any) => {
+                  const windDir = Number(d[1])
+                  const timeStr = d[0]
+                  if (isNaN(windDir)) return null
+                  const radiusIndex = timeIndex.indexOf(timeStr)
+                  if (radiusIndex === -1) return null
+                  return [radiusIndex, windDir, timeStr]
+                })
+                .filter(Boolean)
             }))
-        }
+          }
+        } : {})
     }
 }
