@@ -655,7 +655,7 @@ html, body, #__nuxt, #app {
 .global-toggle-btn {
   position: absolute;
   top: 22px;
-  left: 10px;
+  left: 5px;
   z-index: 1000;
   background-color: white;
   border: 1px solid #ccc;
