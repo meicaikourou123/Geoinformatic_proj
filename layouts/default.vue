@@ -652,6 +652,21 @@ html, body, #__nuxt, #app {
   right: 12px;
   top: 12px;
 }
+.sensor-tooltip {
+  background-color: rgba(255, 255, 255, 0.85);
+  color: #000;
+  padding: 6px 5px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+  line-height: 1.2;
+  max-width: 200px;
+  box-shadow: 0 0px 6px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  position: absolute;
+  z-index: 999;
+  white-space: nowrap;
+}
 .global-toggle-btn {
   position: absolute;
   top: 22px;
