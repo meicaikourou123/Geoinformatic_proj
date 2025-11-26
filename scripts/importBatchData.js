@@ -4,11 +4,8 @@ import { fileURLToPath } from 'url';
 import { Client } from 'pg';
 
 // here I import the sensor data into the pgsql
-// but the strom data, I import it manually
-
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 
 const BATCH_SIZE = 1000;
@@ -22,7 +19,7 @@ const client = new Client({
 });
 
 
-const datasetDir = '/Users/sunzheng/Downloads/01datasets/VV_tot';
+const datasetDir = '/Users/sunzheng/Downloads/01datasets/VV_tot';  // if import data, edit the data path here
 async function insertBatch(rows) {
     if (rows.length === 0) return;
 
@@ -33,7 +30,7 @@ async function insertBatch(rows) {
     const flatValues = rows.flat();
 
     await client.query(
-        `INSERT INTO vv_tot (vv_id, date_time, data) VALUES ${valuesClause}`,
+        `INSERT INTO vv_tot (vv_id, date_time, data) VALUES ${valuesClause}`,       // if import data inti db, modify table name and attribute name here
         flatValues
     );
 }

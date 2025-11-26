@@ -5,11 +5,10 @@ import { Client } from 'pg';
 
 
 //  importBatchData.js is faster, please use importBatchData
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
-// =
-const datasetDir = '/Users/sunzheng/Downloads/01datasets/PA_tot';
+const __filename = fileURLToPath(import.meta.url);
+
+const datasetDir = '/Users/sunzheng/Downloads/01datasets/PA_tot';   // if import data, edit file path
 
 // ===== PostgreSQL  =====
 const client = new Client({
@@ -24,7 +23,6 @@ const client = new Client({
 async function importFileToDB(filePath) {
     const basename = path.basename(filePath);               // e.g. data_123.txt
     const filenameWithoutExt = path.parse(basename).name.slice(0, -7);   // e.g. data_123
-
     const content = fs.readFileSync(filePath, 'utf-8');
     const lines = content.split(/\r?\n/).filter(Boolean);   // 去除空行
     const dataLines = lines.slice(1);
@@ -43,7 +41,7 @@ async function importFileToDB(filePath) {
         console.log(filenameWithoutExt,col1,col2)
 
         await client.query(
-            'INSERT INTO pa_tot (pa_id, date_time, data) VALUES ($1, $2, $3)',
+            'INSERT INTO pa_tot (pa_id, date_time, data) VALUES ($1, $2, $3)',  // if import data, modify name here
             [filenameWithoutExt, col1, col2]
         );
 
