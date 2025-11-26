@@ -6,16 +6,14 @@ services:
     container_name: my_postgres
     restart: always
     environment:
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
-      POSTGRES_DB: mydb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
       - ./db/init:/docker-entrypoint-initdb.d
-    # 说明：
-    # ./db/init 会自动执行 restore.sh，从 backup.dump 还原数据库
 
   backend:
     build: ./backend
@@ -27,9 +25,9 @@ services:
       - "3000:3000"
     environment:
       DATABASE_HOST: db
-      DATABASE_USER: myuser
-      DATABASE_PASSWORD: mypassword
-      DATABASE_NAME: mydb
+      DATABASE_USER: postgres
+      DATABASE_PASSWORD: 123456
+      DATABASE_NAME: postgres
       DATABASE_PORT: 5432
     command: ["npm", "start"]
 
