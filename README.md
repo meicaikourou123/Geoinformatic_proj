@@ -12,9 +12,9 @@ Echarts for chart visualization
 Postgresql as database
 
 
-### The design documents are in the Document file including:
-deployment and code availability /t
-platform report /t
-technical document /t
-user manual /t
-Those material are available.
+## The design documents are in the Document file including:
+* deployment and code availability
+* platform report
+* technical document 
+* user manual
+### Those material are available.
