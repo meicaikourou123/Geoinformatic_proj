@@ -1,24 +1,8 @@
-# Nuxt Minimal Starter
+## This is an WebGIS project
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
-
-## Setup
-
-Make sure to install dependencies:
-
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
+Mainly monitor the metereological condition around the Lombardy area
+Interaction the Map content and query relevant metereological condition.
+Then display the organized information on the Echarts charts.
 
 ## Development Server
 
