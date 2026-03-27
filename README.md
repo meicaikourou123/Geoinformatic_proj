@@ -4,56 +4,17 @@ Mainly monitor the metereological condition around the Lombardy area
 Interaction the Map content and query relevant metereological condition.
 Then display the organized information on the Echarts charts.
 
-## Development Server
+## The main techinical stacks are following:
+Vue Nuxt.js
+Naive UI for frontend element UI
+Openlayers for GIS development
+Echarts for chart visualization
+Postgresql as database
 
-Start the development server on `http://localhost:3000`:
 
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
-```
-
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
-```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
-```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+### The design documents are in the Document file including:
+deployment and code availability
+platform report
+technical document
+user manual
+Those material are available.
